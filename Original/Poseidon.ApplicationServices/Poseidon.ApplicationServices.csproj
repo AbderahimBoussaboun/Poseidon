@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ApplicationIcon />
+    <StartupObject />
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Poseidon.Api.Models\Poseidon.Api.Models.csproj" />
+    <ProjectReference Include="..\Poseidon.Entities\Poseidon.Entities.csproj" />
+    <ProjectReference Include="..\Poseidon.Repositories\Poseidon.Repositories.csproj" />
+  </ItemGroup>
+
+</Project>
