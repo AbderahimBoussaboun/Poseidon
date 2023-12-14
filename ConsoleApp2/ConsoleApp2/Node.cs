@@ -3,15 +3,11 @@ using System.Collections.Generic;
 
 namespace ConsoleApp2;
 
-public partial class Pool
+public partial class Node
 {
-    public Guid PoolId { get; set; }
-
-    public Guid? MonitorId { get; set; }
+    public Guid NodeId { get; set; }
 
     public bool Active { get; set; }
-
-    public string BalancerType { get; set; } = null!;
 
     public DateTime? DateDisable { get; set; }
 
@@ -19,13 +15,13 @@ public partial class Pool
 
     public DateTime? DateModify { get; set; }
 
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
+
+    public string Ip { get; set; } = null!;
 
     public string Name { get; set; } = null!;
 
-    public virtual Monitor? Monitor { get; set; }
+    public string Port { get; set; } = null!;
 
     public virtual ICollection<NodePool> NodePools { get; set; } = new List<NodePool>();
-
-    public virtual ICollection<Virtual> Virtuals { get; set; } = new List<Virtual>();
 }
