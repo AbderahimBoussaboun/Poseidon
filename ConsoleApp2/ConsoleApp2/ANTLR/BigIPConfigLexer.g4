@@ -1,7 +1,7 @@
 ﻿lexer grammar BigIPConfigLexer;
 
 RECORD_PRE: 'ltm' (' ' | '\t')+ ;
-TYPE: 'node' | 'pool' | 'rule' | 'virtual';
+TYPE: 'node' | 'pool' | 'rule' | 'virtual' | 'monitor' ;
 RECORD_POST: (' ' | '\t')+ '/' (~[{}\r\n/])*? '/' (~[{}\r\n])*? (' ' | '\t')+ ;
 LBRACE: '{';
 RBRACE: '}';

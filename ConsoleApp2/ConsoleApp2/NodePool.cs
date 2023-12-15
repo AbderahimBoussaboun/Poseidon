@@ -9,6 +9,8 @@ public partial class NodePool
 
     public Guid PoolId { get; set; }
 
+    public string NodePort { get; set; } = null!;
+
     public bool Active { get; set; }
 
     public DateTime? DateDisable { get; set; }
