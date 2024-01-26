@@ -21,7 +21,5 @@ public partial class Node
 
     public string Name { get; set; } = null!;
 
-    public string Port { get; set; } = null!;
-
     public virtual ICollection<NodePool> NodePools { get; set; } = new List<NodePool>();
 }

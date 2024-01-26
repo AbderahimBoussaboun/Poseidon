@@ -2,7 +2,7 @@
 
 RECORD_PRE: 'ltm' (' ' | '\t')+ ;
 TYPE: 'node' | 'pool' | 'rule' | 'virtual' | 'monitor' ;
-RECORD_POST: (' ' | '\t')+ '/' (~[{}\r\n/])*? '/' (~[{}\r\n])*? (' ' | '\t')+ ;
+RECORD_POST: (' ' | '\t')+ (~[{}\r\n] )*? '/' (~[{}\r\n])*? (' ' | '\t')+ ;
 LBRACE: '{';
 RBRACE: '}';
 DASH: '-';
