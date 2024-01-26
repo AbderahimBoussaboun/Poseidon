@@ -23,12 +23,23 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                 return BadRequest("Archivo no recibido o vacío");
             }
 
-            try { 
-            
-                // Aquí puedes guardar el archivo en el servidor si es necesario
-                var filePath = Path.Combine(".\\Controllers\\ResourceMaps\\F5\\fileToProcess", archivo.FileName);
+            try
+            {
+                // Crear un GUID o usar un timestamp para generar un nombre de archivo único
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + archivo.FileName;
 
-            Console.WriteLine("El primero funciona");
+                // Especificar la carpeta temporal
+                // Para carpeta temporal del sistema: Path.GetTempPath()
+                string tempFolderPath = ".\\Controllers\\ResourceMaps\\F5\\fileToProcess";
+
+                // Crea la carpeta si no existe
+                if (!Directory.Exists(tempFolderPath))
+                {
+                    Directory.CreateDirectory(tempFolderPath);
+                }
+
+                // Unir directorio y nombre de archivo
+                var filePath = Path.Combine(tempFolderPath, uniqueFileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
@@ -61,17 +72,34 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                     proceso.WaitForExit();
 
                     Console.WriteLine("Hasta aquí todo bien");
+                }
 
-                }        
+                // Elimina el archivo después de procesarlo
+                System.IO.File.Delete(filePath);
+
+                // Elimina todo el contenido de la carpeta temporal
+                var directoryInfo = new DirectoryInfo(tempFolderPath);
+                foreach (var file in directoryInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                foreach (var dir in directoryInfo.GetDirectories())
+                {
+                    dir.Delete(true);
+                }
 
                 // Maneja cualquier resultado del programa Python si es necesario
 
                 return Ok("Procesamiento exitoso");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, $"Error: {ex.Message}");
             }
-    }
+        }
+
+
         #endregion
     }
 }
