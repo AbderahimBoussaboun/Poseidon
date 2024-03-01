@@ -14,4 +14,9 @@
     <ProjectReference Include="..\Poseidon.Repositories\Poseidon.Repositories.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ResourceMaps\Interfaces\NewFolder\" />
+    <Folder Include="ResourceMaps\Services\NewFolder\" />
+  </ItemGroup>
+
 </Project>

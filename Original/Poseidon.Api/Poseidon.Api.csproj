@@ -32,6 +32,8 @@
     <Folder Include="Configurations\" />
     <Folder Include="Controllers\ResourceMaps\F5\fileToProcess\" />
     <Folder Include="Controllers\ResourceMaps\F5\script\" />
+    <Folder Include="Filters\" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>

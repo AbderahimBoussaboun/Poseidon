@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Poseidon.Entities.ResourceMaps.Servers;
 
 namespace Poseidon.Entities.ResourceMaps.F5
 {
-    public class Node : BaseEntity
-    {
-        public Node() { }
-        public string IP { get; set; }
-        public string Port { get; set; }
-        public string Description { get; set; }
-        public virtual ICollection<Pool> Pools { get; set; }
 
+    public partial class Node:BaseEntity
+    { 
+        public string Description { get; set; } = null!;
+
+        public string Ip { get; set; } = null!;
+
+        public virtual ICollection<NodePool> NodePools { get; set; } = new List<NodePool>();
     }
 }

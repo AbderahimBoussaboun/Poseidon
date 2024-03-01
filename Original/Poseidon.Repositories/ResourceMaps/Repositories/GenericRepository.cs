@@ -73,9 +73,9 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories
         }
 
 
-        private IQueryable<TEntity> IncludeMultiple<TEntity>(params Expression<Func<TEntity, object>>[] includes) where TEntity : BaseEntity
+        protected IQueryable<TEntity> IncludeMultiple<TEntity>(params Expression<Func<TEntity, object>>[] includes) where TEntity : BaseEntity
         {
-            var query = _context.Set<TEntity>().AsQueryable();
+            var query = _context.Set<TEntity>().AsNoTrackingWithIdentityResolution();
 
             foreach (var include in includes)
             {

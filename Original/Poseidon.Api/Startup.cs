@@ -14,20 +14,26 @@ using Poseidon.Entities.ResourceMaps;
 using Poseidon.Repositories.ResourceMaps;
 using Poseidon.Repositories.ResourceMaps.Interfaces;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Applications;
+using Poseidon.Repositories.ResourceMaps.Interfaces.Nodes;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Products;
 using Poseidon.Repositories.ResourceMaps.Repositories;
 using Poseidon.Repositories.ResourceMaps.Repositories.Products;
 using Poseidon.Repositories.ResourceMaps.Repositories.Applications;
+using Poseidon.Repositories.ResourceMaps.Repositories.Nodes;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Balancers;
 using Poseidon.Repositories.ResourceMaps.Repositories.Balancers;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Servers;
 using Poseidon.Repositories.ResourceMaps.Repositories.Servers;
+using Poseidon.Repositories.ResourceMaps.Repositories.Virtuals;
+using Poseidon.Repositories.ResourceMaps.Interfaces.Virtuals;
 using Poseidon.ApplicationServices.ResourceMaps.Interfaces.Applications;
 using Poseidon.ApplicationServices.ResourceMaps.Services.Applications;
 using Poseidon.ApplicationServices.ResourceMaps.Interfaces.Balancers;
 using Poseidon.ApplicationServices.ResourceMaps.Services.Balancers;
 using Poseidon.ApplicationServices.ResourceMaps.Interfaces.Servers;
 using Poseidon.ApplicationServices.ResourceMaps.Services.Servers;
+using Poseidon.ApplicationServices.ResourceMaps.Services.Virtuals;
+using Poseidon.ApplicationServices.ResourceMaps.Interfaces.Virtuals;
 using System.Text.Json.Serialization;
 
 namespace Poseidon.Api
@@ -72,6 +78,8 @@ namespace Poseidon.Api
             services.AddTransient<IApplicationsRepository, ApplicationsRepository>();
             services.AddTransient<IBalancersRepository, BalancersRepository>();
             services.AddTransient<IServersRepository, ServersRepository>();
+            services.AddTransient<IVirtualsRepository, VirtualsRepository>();
+
 
             //Services
 
@@ -86,6 +94,9 @@ namespace Poseidon.Api
             services.AddScoped<IEnvironmentsService, EnvironmentsService>();
             services.AddScoped<IInfraestructuresService, InfraestructuresService>();
             services.AddScoped<IComponentTypesService, ComponentTypesService>();
+            services.AddScoped<IVirtualsService, VirtualsService>();
+            services.AddScoped<INodesRepository, NodesRepository>();
+
 
             //Api swagger
             services.AddSwaggerGen(c =>
@@ -108,11 +119,13 @@ namespace Poseidon.Api
 
             app.UseHttpsRedirection();
 
+            app.UseCors(MyAllowSpecificOrigins); // <---- Moved here
+
             app.UseRouting();
 
-            app.UseCors(MyAllowSpecificOrigins);
-
             app.UseAuthorization();
+
+            app.UseStatusCodePages();
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Poseidon.Entities.ResourceMaps.F5
+namespace Poseidon.Entities.ResourceMaps.F5 { 
+
+public partial class Virtual: BaseEntity
 {
-    public class Virtual : BaseEntity
-    {
-        public Virtual() { }
+    public Guid? PoolId { get; set; }
 
-        public Guid PoolId { get; set; }
-        public Pool Pool { get; set; }
-        public List<Rule> Rules { get; set; }
-    }
+    public virtual Pool? Pool { get; set; }
+
+    public virtual ICollection<Rule> Rules { get; set; } = new List<Rule>();
+}
 }
