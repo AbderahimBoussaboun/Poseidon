@@ -1,0 +1,151 @@
+<ng-container>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" class="form-control search-field poseidon-text-search float-end me-2" placeholder="Search" [(ngModel)]="searchText">
+        </div>
+        <h1 class="list-title">Monitors List</h1>
+        <ul class="elements">
+            <li *ngFor="let item of filteredMonitors" (click)="toggleDetails(item)" [class.active]="item.showDetails">
+                <span class="toggle-icon"
+                    [ngClass]="{'expanded': item.showDetails, 'collapsed': !item.showDetails}"></span>
+                <span class="element-name">[Monitor: {{ item.name }}]</span>
+                <div *ngIf="item.showDetails" class="details" (click)="preventPropagation($event)">
+                    <div *ngIf="item.showDetails">
+                        <ul>
+                            <li>
+                                <div (click)="toggleGeneralDetails(item)"><strong>Details: </strong></div>
+                                <ul *ngIf="item.showGeneralDetails">
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.adaptive"><strong>Adaptive:
+                                        </strong>{{item.adaptive}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.cipherlist">
+                                        <strong>Cipherlist:
+                                        </strong>{{item.cipherlist}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.compatibility">
+                                        <strong>Compatibility:
+                                        </strong>{{item.compatibility}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.debug"><strong>Debug:
+                                        </strong>{{item.debug}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.defaults_from">
+                                        <strong>Defaults From:
+                                        </strong>{{item.defaults_from}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.description">
+                                        <strong>Description:
+                                        </strong>{{item.description}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.destination">
+                                        <strong>Destination:
+                                        </strong>{{item.destination}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.iP_DSCP"><strong>IP_DSCP:
+                                        </strong>{{item.iP_DSCP}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.interval"><strong>Interval:
+                                        </strong>{{item.interval}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.password"><strong>Password:
+                                        </strong>{{item.password}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.recv"><strong>RECV:
+                                        </strong>{{item.recv}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.recV_disable">
+                                        <strong>RECV_DISABLE:
+                                        </strong>{{item.recV_disable}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.reverse"><strong>Reverse:
+                                        </strong>{{item.reverse}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.send"><strong>Send:
+                                        </strong>{{item.send}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.server"><strong>Server:
+                                        </strong>{{item.server}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.service"><strong>Service:
+                                        </strong>{{item.service}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.get"><strong>Get:
+                                        </strong>{{item.get}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.ssl_profile">
+                                        <strong>ssl_profile:
+                                        </strong>{{item.ssl_profile}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.time_until_up">
+                                        <strong>time_until_up:
+                                        </strong>{{item.time_until_up}}
+                                    </li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.timeout"><strong>timeout:
+                                        </strong>{{item.timeout}}</li>
+                                    <li [ngClass]="{'exclude-animation': true}" *ngIf="item.username"><strong>Username:
+                                        </strong>{{item.username}}</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <ul>
+                            <li
+                                [ngClass]="{'has-data': item.pools ? item.pools.length > 0 : false, 'no-data': !item.pools || item.pools.length === 0}">
+                                <div (click)="togglePoolDetailsForAll(item)">
+                                    <strong>Pools: </strong>
+                                </div>
+                                <ul *ngIf="item.showPools">
+                                    <li *ngFor="let pool of item.pools">
+                                        <div (click)="togglePoolDetails(pool)">
+                                            <strong>Pool: </strong>{{pool.name}}
+                                        </div>
+                                        <ul *ngIf="pool.showDetails">
+                                            <li *ngIf="pool.description" [ngClass]="{'exclude-animation': true}">
+                                                <strong>Description: </strong>{{pool.description}}
+                                            </li>
+                                            <li *ngIf="pool.balancerType" [ngClass]="{'exclude-animation': true}">
+                                                <strong>BalancerType: </strong>{{pool.balancerType}}
+                                            </li>
+                                            <li *ngIf="pool.nodePools">
+                                                <div (click)="toggleMemberList(item)">
+                                                    <span class="toggle-icon" [class.icon-down]="item.showMemberList"
+                                                        [class.icon-right]="!item.showMemberList"></span>
+                                                    <span><strong>Members:</strong></span>
+                                                </div>
+                                                <ul *ngIf="item.showMemberList">
+                                                    <li *ngFor="let nodePool of pool.nodePools">
+                                                        <span class="toggle-icon"
+                                                            [class.icon-down]="item.selectedMember === nodePool.node"
+                                                            [class.icon-right]="item.selectedMember !== nodePool.node"></span>
+                                                        <span class="member-name"
+                                                            (click)="showMemberDetails(nodePool.node, item)"><strong>Member:
+                                                            </strong>[{{ nodePool.node.name }} ]</span>
+                                                        <ul *ngIf="item.selectedMember === nodePool.node">
+                                                            <li *ngIf="nodePool.node.description"
+                                                                [ngClass]="{'exclude-animation': true}">
+                                                                <strong>Member Description:</strong> {{
+                                                                nodePool.node.description }}
+                                                            </li>
+                                                            <li [ngClass]="{'exclude-animation': true}"><strong>Member
+                                                                    IP:</strong> {{ nodePool.node.ip
+                                                                }}</li>
+                                                            <li [ngClass]="{'exclude-animation': true}"><strong>Member
+                                                                    Port:</strong> {{ nodePool.nodePort
+                                                                }}</li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li
+                                                [ngClass]="{'has-data': pool.virtuals.length > 0, 'no-data': pool.virtuals.length === 0}">
+
+                                                <div (click)=" pool.showVirtuals=!pool.showVirtuals"><strong>Virtuals:
+                                                    </strong>
+                                                </div>
+                                                <ul *ngIf="pool.showVirtuals">
+                                                    <li [ngClass]="{'exclude-animation': true}"
+                                                        *ngFor="let virtual of pool.virtuals">
+                                                        <strong>Virtual: </strong>{{virtual.name}}
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</ng-container>

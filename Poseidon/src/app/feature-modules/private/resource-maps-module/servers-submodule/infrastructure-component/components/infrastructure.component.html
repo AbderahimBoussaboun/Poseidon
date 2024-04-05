@@ -1,0 +1,124 @@
+<div class="row">
+    <div class="col-xxl-4"><h2>Infrastructures</h2></div>
+    <div class="col-xxl-8">
+        <div class="mt-3">
+            <button *ngIf="loaded" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addInfrastructure" type="submit" (click)="resetFormValues()">Add Infrastructure</button>
+            <div *ngIf="loaded"><input type="text" class="form-control search-field poseidon-text-search float-end me-2" name="searchText" placeholder="Search Here" [(ngModel)]="searchText"></div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <table *ngIf="infrastructures.length > 0 && loaded" class="table table-striped" style="text-align:center;">
+        <thead>
+            <tr>
+                <th scope="col" [appSort]="infrastructures" data-order="desc" data-name="name">Infrastructure Name</th>
+                <th scope="col" [appSort]="infrastructures" data-order="desc" data-name="dateInsert">Insertion Date</th>
+                <th scope="col" [appSort]="infrastructures" data-order="desc" data-name="dateModify">Modification Date</th>
+                <th scope="col" [appSort]="infrastructures" data-order="desc" data-name="dateDisable">Deactivation Date</th>
+                <th scope="col" [appSort]="infrastructures" data-order="desc" data-name="active">Active</th>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let i of $any (infrastructures | searchFilter: searchText | slice: (page-1) * pageSize : page * pageSize)">
+                <td>{{i.name}}</td>
+                <td>{{i.dateInsert}}</td>
+                <td>{{i.dateModify}}</td>
+                <td>{{i.dateDisable}}</td>
+                <td>{{i.active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
+                        data-bs-target="#editInfrastructure" (click)="modifyInfrastructure(i)">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="openDialog(i)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ngb-pagination *ngIf="loaded && infrastructures.length > 0" [(page)]="page" [pageSize]="pageSize" [collectionSize]="infrastructures.length"></ngb-pagination>
+
+    <div *ngIf="infrastructures?.length == 0 && loaded">
+        Upsss... There are not infrastructures
+    </div>
+
+    <!-- Modal Add Infrastructure -->
+    <div class="modal fade" id="addInfrastructure" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Infrastructure</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form [formGroup]="infrastructureForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Infrastructure Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="infrastructureForm.get('name')?.invalid && infrastructureForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="infrastructureForm.invalid" class="btn btn-success float-end"
+                                data-bs-dismiss="modal" (click)="addInfrastructure()">Add Infrastructure</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Infrastructure -->
+    <div class="modal fade" id="editInfrastructure" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Infrastructure</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form [formGroup]="infrastructureForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Infrastructure Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="infrastructureForm.get('name')?.invalid && infrastructureForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="infrastructureForm.invalid" class="btn btn-outline-success" data-bs-dismiss="modal"
+                                (click)="updateInfrastructure()">Save
+                                Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

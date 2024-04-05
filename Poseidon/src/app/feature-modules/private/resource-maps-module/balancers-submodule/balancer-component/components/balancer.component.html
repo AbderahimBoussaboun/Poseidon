@@ -1,0 +1,164 @@
+<div class="row">
+    <div class="col-xxl-4"><h2>Balancers</h2></div>
+    <div class="col-xxl-8">
+        <div class="mt-3">
+            <button *ngIf="loaded" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addBalancer" type="submit" (click)="resetFormValues()">Add Balancer</button>
+            <div *ngIf="loaded"><input type="text" class="form-control search-field poseidon-text-search float-end me-2" name="searchText" placeholder="Search Here" [(ngModel)]="searchText"></div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <table *ngIf="balancers.length > 0 && loaded" class="table table-striped" style="text-align:center;">
+        <thead>
+            <tr>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="name">Balancer Name</th>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="ip">IP</th>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="ports">Ports</th>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="dateInsert">Insertion Date</th>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="dateModify">Modification Date</th>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="dateDisable">Deactivation Date</th>
+                <th scope="col" [appSort]="balancers" data-order="desc" data-name="active">Active</th>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let i of $any (balancers | searchFilter: searchText | slice: (page-1) * pageSize : page * pageSize)">
+                <td>{{i.name}}</td>
+                <td>{{i.ip}}</td>
+                <td>{{i.ports}}</td>
+                <td>{{i.dateInsert}}</td>
+                <td>{{i.dateModify}}</td>
+                <td>{{i.dateDisable}}</td>
+                <td>{{i.active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
+                        data-bs-target="#editBalancer" (click)="modifyBalancer(i)">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="openDialog(i)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ngb-pagination *ngIf="loaded && balancers.length > 0" [(page)]="page" [pageSize]="pageSize" [collectionSize]="balancers.length"></ngb-pagination>
+
+    <div *ngIf="balancers?.length == 0 && loaded">
+        Upsss... There are not balancers
+    </div>
+
+    <!-- Modal Add Balancer -->
+    <div class="modal fade" id="addBalancer" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Balancer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form [formGroup]="balancerForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Balancer Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="balancerForm.get('name')?.invalid && balancerForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ip" class="form-label">IP</label>
+                            <input type="text" formControlName="ip" class="form-control" id="ip"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="balancerForm.get('ip')?.invalid && balancerForm.get('ip')?.touched"
+                                class="text-danger">
+                                The <strong>IP</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ports" class="form-label">Ports</label>
+                            <input type="text" formControlName="ports" class="form-control" id="ports"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="balancerForm.get('ports')?.invalid && balancerForm.get('ports')?.touched"
+                                class="text-danger">
+                                The <strong>ports</strong> are required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="balancerForm.invalid" class="btn btn-success float-end"
+                                data-bs-dismiss="modal" (click)="addBalancer()">Add Balancer</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Balancer -->
+    <div class="modal fade" id="editBalancer" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Balancer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form [formGroup]="balancerForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Balancer Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="balancerForm.get('name')?.invalid && balancerForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ip" class="form-label">IP</label>
+                            <input type="text" formControlName="ip" class="form-control" id="ip"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="balancerForm.get('ip')?.invalid && balancerForm.get('ip')?.touched"
+                                class="text-danger">
+                                The <strong>IP</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ports" class="form-label">Ports</label>
+                            <input type="text" formControlName="ports" class="form-control" id="ports"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="balancerForm.get('ports')?.invalid && balancerForm.get('ports')?.touched"
+                                class="text-danger">
+                                The <strong>ports</strong> are required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="balancerForm.invalid" class="btn btn-outline-success" data-bs-dismiss="modal"
+                                (click)="updateBalancer()">Save
+                                Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

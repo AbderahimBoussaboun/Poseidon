@@ -1,0 +1,55 @@
+<!-- Botón para abrir el modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal" (click)="getAllBalancers()">
+  Upload File
+</button>
+
+<!-- Modal -->
+<div #uploadModal class="modal fade" id="uploadModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+  role="dialog" aria-labelledby="uploadModalLabel" (hidden)="onModalClose()">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload File</h5>
+        <button type="button" class="close" [disabled]="isSubmitting" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Formulario para subir archivo -->
+        <input #fileInput type="file" class="mb-3" (change)="handleFileInput($any($event.target).files)">
+
+        <!-- Dropdown para seleccionar el balanceador -->
+        <!-- Dropdown para seleccionar el balanceador -->
+        <div class="form-group">
+          <label for="balanceadorSelect"><strong>Which balancer does the file belong to?:</strong><span class="text-danger">*</span></label>
+          <select class="form-control" id="balanceadorSelect" [(ngModel)]="selectedBalanceador" required>
+            <option value="" disabled [selected]="true" hidden>Select Balancer</option>
+            <!-- Iterar sobre la lista de balanceadores -->
+            <option *ngFor="let balancer of balancers" [value]="balancer.id">{{ balancer.name }}</option>
+          </select>
+        </div>
+
+        <!-- Campo para introducir mensaje de commit -->
+        <div class="form-group">
+          <label for="commitMessage"><strong>Commit Message:</strong><span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="commitMessage" [(ngModel)]="commitMessage" required>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="mensajeError" class="alert alert-danger" role="alert">
+          {{ mensajeError }}
+        </div>
+
+        <!-- Mensaje de éxito -->
+        <div *ngIf="mensajeExito" class="alert alert-success" role="alert">
+          {{ mensajeExito }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" [disabled]="isSubmitting" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary"
+          [disabled]="isSubmitting || !selectedBalanceador || !commitMessage" (click)="submitFile()">Send File</button>
+      </div>
+    </div>
+  </div>
+</div>

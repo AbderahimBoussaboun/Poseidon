@@ -1,0 +1,152 @@
+<div class="row">
+    <div class="col-xxl-4"><h2>{{nameRole}} Server Applications</h2></div>
+    <div class="col-xxl-8">
+        <div class="mt-3">
+            <button class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addServerApplication" type="submit" (click)="resetFormValues()">Add Server Application</button>                            
+            <div *ngIf="loaded"><input type="text" class="form-control search-field poseidon-text-search float-end me-2" name="searchText" placeholder="Search Here" [(ngModel)]="searchText"></div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <table *ngIf="serverApplications.length > 0 && loaded" class="table table-striped" style="text-align:center;">
+        <thead>
+            <tr>
+                <th scope="col" [appSort]="serverApplications" data-order="desc" data-name="name">Server Application Name</th>
+                <th scope="col" [appSort]="serverApplications" data-order="desc" data-name="componentId">Component Name</th>
+                <th scope="col" [appSort]="serverApplications" data-order="desc" data-name="dateInsert">Insertion Date</th>
+                <th scope="col" [appSort]="serverApplications" data-order="desc" data-name="dateModify">Modification Date</th>
+                <th scope="col" [appSort]="serverApplications" data-order="desc" data-name="dateDisable">Deactivation Date</th>
+                <th scope="col" [appSort]="serverApplications" data-order="desc" data-name="active">Active</th>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let i of $any (serverApplications | searchFilter: searchText | slice: (page-1) * pageSize : page * pageSize)">
+                <td>{{i.name}}</td>
+                <td>{{i.componentId}}</td>
+                <td>{{i.dateInsert}}</td>
+                <td>{{i.dateModify}}</td>
+                <td>{{i.dateDisable}}</td>
+                <td>{{i.active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
+                        data-bs-target="#editServerApplication" (click)="modifyServerApplication(i)">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="openDialog(i)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ngb-pagination *ngIf="loaded && serverApplications.length > 0" [(page)]="page" [pageSize]="pageSize" [collectionSize]="serverApplications.length"></ngb-pagination>
+
+    <div *ngIf="serverApplications?.length == 0">
+        Upsss... There are not server applications
+    </div>
+
+    <!-- Modal Add ServerApplication -->
+    <div class="modal fade" id="addServerApplication" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Server Application</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form [formGroup]="serverApplicationForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Server Application Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="serverApplicationForm.get('name')?.invalid && serverApplicationForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="roleId" class="form-label">Role Name</label>
+                            <input disabled type="text" class="form-control" id="roleId" aria-describedby="emailHelp"
+                                value="{{nameRole}}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="hasComponent" class="form-label">Component</label>
+                            <select class="form-select" id="hasComponent" formControlName="hasComponent" (change)="changeHasComponent($event)">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" *ngIf="serverApplicationForm.value?.hasComponent">
+                            <label for="applicationId" class="form-label">Application Name</label>
+                            <select class="form-select" id="applicationId" formControlName="applicationId" (change)="changeApplicationSelected($event)">
+                                <option *ngFor="let a of applications" [ngValue]="a.id">{{ a.name }}</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" *ngIf="serverApplicationForm.value?.applicationId">
+                            <label for="subapplicationId" class="form-label">SubApplication Name</label>
+                            <select class="form-select" id="subapplicationId" formControlName="subapplicationId" (change)="changeSubApplicationSelected($event)">
+                                <option *ngFor="let s of subApplications" [ngValue]="s.id">{{ s.name }}</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" *ngIf="serverApplicationForm.value?.subapplicationId">
+                            <label for="componentId" class="foram-label">Component Name</label>
+                            <select class="form-select" id="componentId" formControlName="componentId">
+                                <option *ngFor="let c of components" [ngValue]="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="serverApplicationForm.invalid" class="btn btn-success float-end"
+                                data-bs-dismiss="modal" (click)="addServerApplication()">Add Server Application</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Server Application -->
+    <div class="modal fade" id="editServerApplication" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Server Application</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form [formGroup]="serverApplicationForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Server Application Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal"
+                                (click)="updateServerApplication()">Save
+                                Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

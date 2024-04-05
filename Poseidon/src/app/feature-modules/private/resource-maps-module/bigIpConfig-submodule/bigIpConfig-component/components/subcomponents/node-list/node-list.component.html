@@ -1,0 +1,127 @@
+<ng-container>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" class="form-control search-field poseidon-text-search float-end me-2" placeholder="Search" [(ngModel)]="searchText">
+        </div>
+        <h1 class="list-title">Nodes List</h1>        
+        <ul class="elements">
+            <li *ngFor="let nodeItem of filteredNodes" (click)="toggleDetails(nodeItem)" [class.active]="nodeItem.showDetails">
+                <span class="toggle-icon"
+                    [ngClass]="{'expanded': nodeItem.isExpanded, 'collapsed': !nodeItem.isExpanded}"></span>
+                <span class="element-name">[ Node: {{nodeItem.name}} ]</span>
+                <div *ngIf="nodeItem.showDetails" class="details" (click)="preventPropagation($event)">
+                    <ul>
+                        <li *ngIf="nodeItem.description" [ngClass]="{'exclude-animation': true}">
+                            <strong>Description: </strong>{{nodeItem.description}}
+                        </li>
+                        <li *ngIf="nodeItem.ip" [ngClass]="{'exclude-animation': true}">
+                            <strong>Internet Protocol: </strong>{{nodeItem.ip}}
+                        </li>
+                        <li
+                            [ngClass]="{'has-data': nodeItem.nodePools ? nodeItem.nodePools.length > 0 : false, 'no-data': !nodeItem.nodePools || nodeItem.nodePools.length === 0}">
+                            <div (click)="togglePoolDetailsForAll(nodeItem)">
+                                <strong>Pools: </strong>
+                            </div>
+                            <ul *ngIf="nodeItem.showPools">
+                                <li *ngFor="let nodePool of nodeItem.nodePools">
+                                    <div (click)="togglePoolDetails(nodePool.pool)">
+                                        <strong>Pool: </strong>{{nodePool.pool.name}}
+                                    </div>
+                                    <ul *ngIf="nodePool.pool.showDetails">
+                                        <li *ngIf="nodePool.pool.description" [ngClass]="{'exclude-animation': true}">
+                                            <strong>Description: </strong>{{nodePool.pool.description}}
+                                        </li>
+                                        <li *ngIf="nodePool.pool.balancerType" [ngClass]="{'exclude-animation': true}">
+                                            <strong>Balancer Type: </strong>{{nodePool.pool.balancerType}}
+                                        </li>
+                                        <li *ngIf="nodePool.pool.monitor"
+                                            (click)="nodePool.pool.monitor.showDetails = !nodePool.pool.monitor.showDetails">
+                                            <strong>Monitor: </strong>{{nodePool.pool.monitor.name}}
+                                            <ul *ngIf="nodePool.pool.monitor.showDetails">
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.adaptive"><strong>Adaptive:
+                                                    </strong>{{nodePool.pool.monitor.adaptive}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.cipherlist"><strong>Cipherlist:
+                                                    </strong>{{nodePool.pool.monitor.cipherlist}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.compatibility"><strong>Compatibility:
+                                                    </strong>{{nodePool.pool.monitor.compatibility}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.debug"><strong>Debug:
+                                                    </strong>{{nodePool.pool.monitor.debug}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.defaults_from"><strong>Defaults From:
+                                                    </strong>{{nodePool.pool.monitor.defaults_from}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.description"><strong>Description:
+                                                    </strong>{{nodePool.pool.monitor.description}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.destination"><strong>Destination:
+                                                    </strong>{{nodePool.pool.monitor.destination}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.iP_DSCP"><strong>IP DSCP:
+                                                    </strong>{{nodePool.pool.monitor.iP_DSCP}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.interval"><strong>Interval:
+                                                    </strong>{{nodePool.pool.monitor.interval}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.password"><strong>Password:
+                                                    </strong>{{nodePool.pool.monitor.password}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.recv"><strong>RECV:
+                                                    </strong>{{nodePool.pool.monitor.recv}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.recV_disable"><strong>RECV_DISABLE:
+                                                    </strong>{{nodePool.pool.monitor.recV_disable}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.reverse"><strong>Reverse:
+                                                    </strong>{{nodePool.pool.monitor.reverse}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.send"><strong>Send:
+                                                    </strong>{{nodePool.pool.monitor.send}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.server"><strong>Server:
+                                                    </strong>{{nodePool.pool.monitor.server}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.service"><strong>Service:
+                                                    </strong>{{nodePool.pool.monitor.service}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.get"><strong>Get:
+                                                    </strong>{{nodePool.pool.monitor.get}}
+                                                </li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.ssl_profile"><strong>SSL Profile:
+                                                    </strong>{{nodePool.pool.monitor.ssl_profile}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.time_until_up"><strong>Time Until Up:
+                                                    </strong>{{nodePool.pool.monitor.time_until_up}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.timeout"><strong>Timeout:
+                                                    </strong>{{nodePool.pool.monitor.timeout}}</li>
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngIf="nodePool.pool.monitor.username"><strong>Username:
+                                                    </strong>{{nodePool.pool.monitor.username}}</li>
+                                            </ul>
+                                        </li>
+                                        <li
+                                            [ngClass]="{'has-data': nodePool.pool.virtuals.length > 0, 'no-data': nodePool.pool.virtuals.length === 0}">
+                                            <div (click)="nodePool.pool.showVirtuals = !nodePool.pool.showVirtuals">
+                                                <strong>Virtuals: </strong></div>
+                                            <ul *ngIf="nodePool.pool.showVirtuals">
+                                                <li [ngClass]="{'exclude-animation': true}"
+                                                    *ngFor="let virtual of nodePool.pool.virtuals">
+                                                    <strong>Virtual: </strong>{{virtual.name}}
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</ng-container>

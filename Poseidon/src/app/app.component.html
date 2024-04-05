@@ -1,0 +1,12 @@
+<app-spinner></app-spinner>
+<app-toasts aria-live="polite" aria-atomic="true"></app-toasts>
+<app-header></app-header>
+<div class="container" [ngClass]="{ 'sidebar-open': (sidebarService.isSidebarOpen$ | async) }" style="padding-top: 90px; padding-bottom: 120px;">
+    <app-ng7-bootstrap-breadcrumb id="breadcrumb"></app-ng7-bootstrap-breadcrumb>
+    <div class="m-4"></div>
+    <router-outlet></router-outlet>
+    <button class="scroll-to-top-btn" (click)="scrollToTop()" *ngIf="shouldShowScrollTopButton">
+        <i class="fas fa-chevron-up"></i> <!-- Icono de flecha hacia arriba -->
+    </button>
+</div>
+<app-footer></app-footer>

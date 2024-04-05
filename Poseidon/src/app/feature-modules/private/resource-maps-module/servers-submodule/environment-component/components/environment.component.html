@@ -1,0 +1,124 @@
+<div class="row">
+    <div class="col-xxl-4"><h2>Environments</h2></div>
+    <div class="col-xxl-8">
+        <div class="mt-3">
+            <button *ngIf="loaded" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addEnvironment" type="submit" (click)="resetFormValues()">Add Environment</button>
+            <div *ngIf="loaded"><input type="text" class="form-control search-field poseidon-text-search float-end me-2" name="searchText" placeholder="Search Here" [(ngModel)]="searchText"></div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <table *ngIf="environments.length > 0 && loaded" class="table table-striped" style="text-align:center;">
+        <thead>
+            <tr>
+                <th scope="col" [appSort]="environments" data-order="desc" data-name="name">Environment Name</th>
+                <th scope="col" [appSort]="environments" data-order="desc" data-name="dateInsert">Insertion Date</th>
+                <th scope="col" [appSort]="environments" data-order="desc" data-name="dateModify">Modification Date</th>
+                <th scope="col" [appSort]="environments" data-order="desc" data-name="dateDisable">Deactivation Date</th>
+                <th scope="col" [appSort]="environments" data-order="desc" data-name="active">Active</th>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let i of $any (environments | searchFilter: searchText | slice: (page-1) * pageSize : page * pageSize)">
+                <td>{{i.name}}</td>
+                <td>{{i.dateInsert}}</td>
+                <td>{{i.dateModify}}</td>
+                <td>{{i.dateDisable}}</td>
+                <td>{{i.active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
+                        data-bs-target="#editEnvironment" (click)="modifyEnvironment(i)">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="openDialog(i)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ngb-pagination *ngIf="loaded && environments.length > 0" [(page)]="page" [pageSize]="pageSize" [collectionSize]="environments.length"></ngb-pagination>
+    
+    <div *ngIf="environments?.length == 0 && loaded">
+        Upsss... There are not environments
+    </div>
+
+    <!-- Modal Add Environment -->
+    <div class="modal fade" id="addEnvironment" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Environment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form [formGroup]="environmentForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Environment Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="environmentForm.get('name')?.invalid && environmentForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="environmentForm.invalid" class="btn btn-success float-end"
+                                data-bs-dismiss="modal" (click)="addEnvironment()">Add Environment</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Environment -->
+    <div class="modal fade" id="editEnvironment" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Environment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form [formGroup]="environmentForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Environment Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="environmentForm.get('name')?.invalid && environmentForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="environmentForm.invalid" class="btn btn-outline-success" data-bs-dismiss="modal"
+                                (click)="updateEnvironment()">Save
+                                Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

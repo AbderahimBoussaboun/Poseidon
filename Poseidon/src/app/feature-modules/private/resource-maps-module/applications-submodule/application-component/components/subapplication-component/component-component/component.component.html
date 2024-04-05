@@ -1,0 +1,241 @@
+<div class="row">
+    <div class="col-xxl-4"><h2>{{nameSubApplication}} Components</h2></div>
+    <div class="col-xxl-8">
+        <div class="mt-3">
+            <button *ngIf="loaded" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addComponent" type="submit" (click)="resetFormValues()">Add Component</button>	
+            <div *ngIf="loaded"><input type="text" class="form-control search-field poseidon-text-search float-end me-2" name="searchText" placeholder="Search Here" [(ngModel)]="searchText"></div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <table *ngIf="components.length > 0 && loaded" class="table table-striped" style="text-align:center;">
+        <thead>
+            <tr>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="name">Component Name</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="ip">IP</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="ports">Ports</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="queryString">QueryString</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="nameSubApplication">SubApplication Name</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="balancerId">Balancer Name</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="componentTypeId">ComponentType Name</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="dateInsert">Insertion Date</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="dateModify">Modification Date</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="dateDisable">Deactivation Date</th>
+                <th scope="col" [appSort]="components" data-order="desc" data-name="active">Active</th>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let i of $any (components | searchFilter: searchText | slice: (page-1) * pageSize : page * pageSize)">
+                <td>{{i.name}}</td>
+                <td>{{i.ip}}</td>
+                <td>{{i.ports}}</td>
+                <td>{{i.queryString}}</td>
+                <td>{{nameSubApplication}}</td>
+                <td align="center">
+                    <div *ngFor="let j of balancers">
+                        <td *ngIf="j.id == i.balancerId">{{j.name}}</td>
+                    </div>
+                </td>
+                <td align="center">
+                    <div *ngFor="let k of componentsType">
+                        <td *ngIf="k.id == i.componentTypeId">{{k.name}}</td>
+                    </div>
+                </td>
+                <td>{{i.dateInsert}}</td>
+                <td>{{i.dateModify}}</td>
+                <td>{{i.dateDisable}}</td>
+                <td>{{i.active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
+                        data-bs-target="#editComponent" (click)="modifyComponent(i)">Edit</button>
+                    <button type="button" class="btn btn-danger" (click)="openDialog(i)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ngb-pagination *ngIf="loaded && components.length > 0" [(page)]="page" [pageSize]="pageSize" [collectionSize]="components.length"></ngb-pagination>
+
+    <div *ngIf="components?.length == 0 && loaded">
+        Upsss... This subapplication has not got components
+    </div>
+
+    <!-- Modal Add Component -->
+    <div class="modal fade" id="addComponent" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Component</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form [formGroup]="componentForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Component Name</label>
+                            <input type="text" formControlName="name" class="form-control" id="name"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="componentForm.get('name')?.invalid && componentForm.get('name')?.touched"
+                                class="text-danger">
+                                The <strong>name</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subApplicationName" class="form-label">SubApplication Name</label>
+                            <input disabled type="text" class="form-control" id="name" aria-describedby="emailHelp"
+                                value="{{nameSubApplication}}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="componentTypeId" class="form-label">ComponentType Name</label>
+                            <select class="form-select" id="componentTypeId" formControlName="componentTypeId">
+                                <option *ngFor="let c of componentsType" [ngValue]="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ip" class="form-label">IP</label>
+                            <input type="text" formControlName="ip" class="form-control" id="ip"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="componentForm.get('ip')?.invalid && componentForm.get('ip')?.touched"
+                                class="text-danger">
+                                The <strong>IP</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ports" class="form-label">Ports</label>
+                            <input type="text" formControlName="ports" class="form-control" id="ports"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="componentForm.get('ports')?.invalid && componentForm.get('ports')?.touched"
+                                class="text-danger">
+                                The <strong>ports</strong> are required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="hasBalancer" class="form-label">Balancer</label>
+                            <select class="form-select" id="hasBalancer" formControlName="hasBalancer" (change)="changeHasBalancer($event)">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" *ngIf="componentForm.value?.hasBalancer">
+                            <label for="balancerId" class="form-label">Balancer Name</label>
+                            <select class="form-select" id="balancerId" formControlName="balancerId">
+                                <option *ngFor="let b of balancers" [ngValue]="b.id">{{ b.name }}</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="queryString" class="form-label">QueryString</label>
+                            <input type="text" formControlName="queryString" class="form-control" id="queryString"
+                                aria-describedby="emailHelp">
+                            <span
+                                *ngIf="componentForm.get('queryString')?.invalid && componentForm.get('queryString')?.touched"
+                                class="text-danger">
+                                The <strong>queryString</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="componentForm.invalid" class="btn btn-success float-end"
+                                data-bs-dismiss="modal" (click)="addComponent()">Add Component</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Component -->
+    <div class="modal fade" id="editComponent" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit Component</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="componentForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Component Name</label>
+                        <input type="text" formControlName="name" class="form-control" id="name"
+                            aria-describedby="emailHelp">
+                        <span *ngIf="componentForm.get('name')?.invalid && componentForm.get('name')?.touched"
+                            class="text-danger">
+                            The <strong>name</strong> is required
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="componentTypeId" class="form-label">ComponentType Name</label>
+                        <select class="form-select" id="componentTypeId" formControlName="componentTypeId">
+                            <option *ngFor="let c of componentsType" [ngValue]="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ip" class="form-label">IP</label>
+                        <input type="text" formControlName="ip" class="form-control" id="ip"
+                            aria-describedby="emailHelp">
+                        <span *ngIf="componentForm.get('ip')?.invalid && componentForm.get('ip')?.touched"
+                            class="text-danger">
+                            The <strong>IP</strong> is required
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ports" class="form-label">Ports</label>
+                        <input type="text" formControlName="ports" class="form-control" id="ports"
+                            aria-describedby="emailHelp">
+                        <span *ngIf="componentForm.get('ports')?.invalid && componentForm.get('ports')?.touched"
+                            class="text-danger">
+                            The <strong>ports</strong> are required
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="hasBalancer" class="form-label">Balancer</label>
+                        <select class="form-select" id="hasBalancer" formControlName="hasBalancer" (change)="changeHasBalancer($event)">
+                            <option [ngValue]="true">Yes</option>
+                            <option [ngValue]="false">No</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" *ngIf="componentForm.value?.hasBalancer">
+                        <label for="balancerId" class="form-label">Balancer Name</label>
+                        <select class="form-select" id="balancerId" formControlName="balancerId">
+                            <option *ngFor="let b of balancers" [ngValue]="b.id">{{ b.name }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="queryString" class="form-label">QueryString</label>
+                        <input type="text" formControlName="queryString" class="form-control" id="queryString"
+                            aria-describedby="emailHelp">
+                        <span *ngIf="componentForm.get('queryString')?.invalid && componentForm.get('queryString')?.touched"
+                            class="text-danger">
+                            The <strong>queryString</strong> is required
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="active" class="form-label">Active</label>
+                        <select class="form-select" id="active" formControlName="active">
+                            <option [ngValue]="true">Yes</option>
+                            <option [ngValue]="false">No</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" [disabled]="componentForm.invalid" class="btn btn-outline-success" data-bs-dismiss="modal"
+                            (click)="updateComponent()">Save
+                            Changes</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

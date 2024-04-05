@@ -1,0 +1,15 @@
+<div class="sidebar" [ngClass]="{ 'show': sidebarService.isSidebarOpen$ | async }">
+    <app-navbar></app-navbar>
+    <!-- Contenido del sidebar -->
+</div>
+<div class="navbar-modal" [ngClass]="{ 'expanded': sidebarService.isSidebarOpen$ | async }">
+    <app-navbar-modal></app-navbar-modal></div>
+<div class="content" [ngClass]="{ 'expanded': sidebarService.isSidebarOpen$ | async }">
+    <router-outlet></router-outlet>
+</div>
+
+<button class="toggle-sidebar-btn" (click)="toggleSidebar($event)">
+    <i class="fas"
+        [ngClass]="{ 'fa-chevron-left': sidebarService.isSidebarOpen$ | async, 'fa-chevron-right': !(sidebarService.isSidebarOpen$ | async) }"></i>
+    <!-- Icono de flecha izquierda o derecha dependiendo del estado del sidebar -->
+</button>

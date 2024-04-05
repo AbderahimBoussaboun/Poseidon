@@ -1,0 +1,320 @@
+/* You can add global styles to this file, and also import other style files */
+:root {
+    --poseidon-main-color: #232d4b;    /* azul */
+    --poseidon-text-color1: #5f5f5f;    /* gris textos */
+    --poseidon-bg-color: #f8f8f8;    /* fondo página */
+    --poseidon-nav-color1: #d64541;    /* elemento menú */
+    --poseidon-nav-color2: #00aa9b;    /* elemento menú */
+    --poseidon-bg-primary: #556d7e;
+    --poseidon-bg-secondary: #5c7f98;
+    --poseidon-bg-info: #7b9bb2;
+    --poseidon-bg-success: #a0a0a0;
+    --poseidon-h2: #5c7f98;
+    --poseidon-color3: #232d4b;
+}
+
+@media only screen and (min-width : 1200px) {
+    .container {
+        max-width: 1416px;
+    }
+}
+
+@media only screen and (min-width : 1600px) {
+    .container {
+        max-width: 1608px;
+    }
+}
+
+html, body { height: 100%; }
+
+body {
+    margin: 0;
+    background-color: var(--poseidon-bg-color);
+    font-family: 'Red Hat Display', sans-serif;
+    color: var(--poseidon-text-color1);
+}
+
+select {
+    box-shadow: none;
+}
+
+h2 {
+    color: var(--poseidon-h2);
+    font-weight: 800;
+}
+
+html {
+    font-size: 14px;
+    font-family: 'Red Hat Display', sans-serif;
+}
+
+pre,
+code,
+kbd,
+samp {
+    font-family: 'Red Hat Display', sans-serif;
+}
+
+input,
+button,
+select,
+optgroup,
+textarea {
+    font-family: 'Red Hat Display', sans-serif;
+}
+
+.tooltip {
+    font-family: 'Red Hat Display', sans-serif;
+}
+
+.popover {
+    font-family: 'Red Hat Display', sans-serif;
+}
+
+.text-monospace {
+    font-family: 'Red Hat Display', sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color:#5c7f98;    
+}
+
+a:active {
+    color:#5c7f98;    
+}
+
+a:hover {
+    color:#00aa9b;
+}
+
+/* ~·~ Formulario  ~·~ */
+.poseidon-text-search {
+    max-width: 300px;
+}
+
+
+/* ~·~ TARJETAS  ~·~ */
+
+.poseidon-card-wrapper {
+    cursor:pointer;
+}
+
+/* reducimos el espacio entre cols de un row para aplicarlo en las card de infraestructura*/
+/*
+.poseidon-col1 {
+    padding: 0px 4px
+}
+
+.poseidon-card {
+    width:300px;
+    margin:5px;
+    min-height:172px;
+}
+.poseidon-card .card-body {
+    padding:8px 12px 3px 12px
+}
+.poseidon-card .card-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--poseidon-text-color1);
+}
+.poseidon-card .card-subtitle {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--poseidon-text-color1);
+    margin:-14px 0px 0px 5px;
+}
+
+.poseidon-card .card-text {
+    font-size: 13px;
+    color: var(--poseidon-text-color1);
+}
+
+.poseidon-card .card-text i {
+    width:20px;
+}
+
+.poseidon-card .bg-primary {
+    background-color: var(--poseidon-bg-primary) !important;
+    font-weight:600;
+    font-size:10px;
+}
+.poseidon-card .bg-secondary {
+    background-color: var(--poseidon-bg-secondary) !important;
+    font-weight:600;
+    font-size:10px;
+}
+.poseidon-card .bg-info {
+    background-color: var(--poseidon-bg-info) !important;
+    font-weight:600;
+    font-size:10px;
+}
+.poseidon-card .bg-success {
+    background-color: var(--poseidon-bg-success) !important;
+    font-weight:600;
+    font-size:10px;
+}
+
+.poseidon-card-card-text-hardware {
+    width:50%;
+    padding-left:10px;
+    font-size:12px;
+    font-weight: 400;
+    line-height:15px;
+    min-height: 80px;
+    color:#777777;
+}
+.poseidon-card-card-text-hardware ul {
+    list-style-type:none;
+    padding:0px
+}
+
+.poseidon-card-card-text-hardware i {
+    color: #bbb
+}
+
+.poseidon-card-card-text-roles div {
+    min-width:90px;
+    margin:4px 12px 0px 0px;
+    padding:3px 5px 3px 1px;
+    border:1px solid #cccccc;
+    border-radius:5px;
+}
+
+.poseidon-card-card-title-so {
+    font-weight:400;
+    font-size:14px;
+    margin-top:4px;
+}
+
+.poseidon-card-card-title-so div {
+    font-size:10px;
+    margin-top:-5px
+}
+*/
+/*
+    Added
+*/
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+}
+
+
+/* ~·~ breadcrumb  ~·~ */
+app-ng7-bootstrap-breadcrumb nav {
+	background: none !important;
+}
+
+.breadcrumb {
+    padding: 0px;
+	list-style: none ;
+	overflow: hidden;
+    margin-top: 20px;
+	border-radius:5px;
+	background: #efefef;	
+}
+
+.breadcrumb>li+li:before {
+	padding: 0;
+}
+.breadcrumb li {
+	float: left !important;
+	font-size: 13px !important;
+}
+.breadcrumb li.active a {
+	background: #d8d8d8;
+}
+.breadcrumb li.completed a {
+	background: hsla(153, 57%, 51%, 1);
+}
+.breadcrumb li.active a:after {
+	border-left: 30px solid #d8d8d8;	
+}
+.breadcrumb li.completed a:after {
+	border-left: 30px solid hsla(153, 57%, 51%, 1);
+}
+
+.breadcrumb li a {
+	color: white;
+	text-decoration: none;
+	padding: 5px 0 5px 30px;
+	position: relative;
+	display: block;
+	float: left;
+	color: var(--poseidon-main-color) !important;
+}
+#breadcrumb span {
+	color: white;
+	text-decoration: none;
+	padding: 5px 0 5px 30px;
+	position: relative;
+	display: block;
+	float: left;
+	color: var(--poseidon-main-color) !important;
+}
+.breadcrumb li a:after {
+	content: " ";
+	display: block;
+	width: 0;
+	height: 0;
+	border-top: 50px solid transparent;           /* Go big on the size, and let overflow hide */
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid hsla(0, 0%, 83%, 1);
+	position: absolute;
+	top: 50%;
+	margin-top: -50px;
+	left: 100%;
+	z-index: 2;
+}
+.breadcrumb li a:before {
+	content: " ";
+	display: block;
+	width: 0;
+	height: 0;
+	border-top: 50px solid transparent;           /* Go big on the size, and let overflow hide */
+	border-bottom: 50px solid transparent;
+	border-left: 30px solid white;
+	position: absolute;
+	top: 50%;
+	margin-top: -50px;
+	margin-left: 1px;
+	left: 100%;
+	z-index: 1;  
+}
+.breadcrumb li:first-child a {
+	padding-left: 20px;  
+}
+/*
+.breadcrumb li:left a:before {
+    font-family: FontAwesome; 
+    font-size: 12px; 
+    display: inline; 
+    content: '\f015';
+    color:red !important; 
+}
+*/
+
+
+
+.breadcrumb li a:hover { background: #d8d8d8  ; }
+.breadcrumb li a:hover:after { border-left-color: #d8d8d8 !important; }
+
+.container .breadcrumb {
+  transition: margin-left 0.3s; /* Transición suave para el breadcrumb */
+}
+
+/* Ajusta el margen izquierdo del breadcrumb cuando el sidebar esté abierto */
+.container.sidebar-open .breadcrumb {
+  margin-left: 100px; /* Ajusta este valor según el ancho de tu sidebar */
+}
+

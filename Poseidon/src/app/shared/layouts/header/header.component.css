@@ -1,0 +1,29 @@
+.poseidon-navbar-collapse li {
+    padding: 12px 0px 0px 20px;
+}
+
+.poseidon-navbar-collapse li a {
+    font-size: 16px;
+    font-weight: 500;    
+}
+
+.poseidon-navbar-collapse li a:hover {
+    border-bottom: 4px solid var(--poseidon-nav-color2);
+    color: white;
+}
+
+.poseidon-navbar-collapse .active { 
+    border-bottom: 4px solid var(--poseidon-nav-color1);
+    color: white;
+}
+
+.poseidon-navbar-collapse .active:hover {
+    border-bottom: 4px solid var(--poseidon-nav-color1);
+    border-bottom: 4px solid var(--poseidon-nav-color1);
+    color: white;
+    cursor:default;
+}
+
+.poseidon-bg-blue1 {
+    background-color: var(--poseidon-main-color);
+}

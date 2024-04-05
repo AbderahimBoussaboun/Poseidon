@@ -1,0 +1,307 @@
+/* BigIpCongif STYLES*/
+
+/* Estilos generales 
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    color: #333333;
+    line-height: 1.6;
+  }*/
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Estilos para el título "Lista de "..."" */
+.list-title {
+  margin-top: 5px;
+  /* Ajusta este valor según sea necesario */
+  margin-bottom: 40px;
+  /* Ajusta este valor según sea necesario */
+  font-size: 36px;
+  /* Ajusta el tamaño del texto según sea necesario */
+  font-weight: bold;
+  /* Usa un peso de fuente más audaz */
+  text-transform: uppercase;
+  /* Convierte el texto a mayúsculas */
+  letter-spacing: 2px;
+  /* Ajusta el espaciado entre letras */
+  color: var(--poseidon-h2);
+  /* Color del texto */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  /* Agrega una sombra al texto */
+  text-align: center;
+  /* Centra el texto horizontalmente */
+  
+}
+
+/* Estilos para la lista de servidores virtuales */
+.elements {
+  list-style-type: none;
+  padding: 0;
+}
+
+.elements li {
+  position: relative;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background-color: #ffffff;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.elements li.active {
+  background-color: #f4f4f4;
+  color: #333333;
+  font-size: 18px;
+}
+
+.elements li:not(.exclude-animation):hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+
+}
+
+/* Estilos para el icono de alternancia */
+.toggle-icon {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #999999;
+  transition: color 0.3s;
+  /* Agregado */
+}
+
+/* Estilos para el nombre del servidor virtual */
+.element-name {
+  margin-left: 50px;
+  font-weight: bold;
+  font-size: 20px;
+  color: #333333;
+}
+
+/* Estilos para los detalles */
+.details {
+  border-top: 1px solid #dddddd;
+  padding-top: 20px;
+  background-color: #f8f8f8;
+  border-radius: 0 0 12px 12px;
+  margin-top: 20px;
+  display: none;
+}
+
+.elements li.active>.details {
+  display: block;
+}
+
+/* Estilos para el contenido de los detalles */
+.has-data {
+  color: #333333;
+  font-size: 18px;
+}
+
+.no-data {
+  color: #999999;
+  font-size: 18px;
+  cursor: not-allowed;
+}
+
+/* Estilos para los elementos al hacer hover */
+.elements li:hover .toggle-icon,
+.elements li.active:hover .toggle-icon {
+  color: #666666;
+}
+
+.elements li:hover .element-name,
+.elements li.active:hover .element-name {
+  color: #555555;
+}
+
+/* Estilos para la animación al hacer clic */
+@keyframes detailsAnimation {
+  0% {
+    transform: scaleY(0);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.elements li.active>.details {
+  display: block;
+  animation: detailsAnimation 0.3s ease forwards;
+}
+
+/* Estilos para los botones de acción */
+.action-button {
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+/*
+  .expanded:before {
+    content: "\25BD"; /* Cambia esto al ícono de expansión 
+  }*/
+
+.collapsed:before {
+  content: "\25b6";
+  /* Cambia esto al ícono de contraer */
+}
+
+/* Nuevos estilos para la barra de navegación */
+.navbar {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+/* app.component.css */
+
+.sidebar {
+  background-color: var(--poseidon-main-color);
+  color: white;
+  overflow-y: auto;
+  position: fixed;
+  top: 89px; /* Ajusta según el espacio ocupado por el header y el breadcrumb */
+  left: -200px; /* Oculta el sidebar por defecto */
+  width: 200px;
+  height: calc(100% - 140px); /* Resta el espacio ocupado por el header y el breadcrumb */
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra */
+  z-index: 100; /* Asegura que esté por encima del contenido */
+  transition: left 0.3s ease; /* Transición suave */
+}
+
+.sidebar.show {
+  left: 0; /* Muestra el sidebar */
+}
+
+.sidebar.show .toggle-sidebar-btn {
+  left: 200px; /* Mueve el botón a la derecha cuando el sidebar está abierto */
+}
+
+.logo {
+  /* Estilos para el logo */
+  font-size: 20px;
+  font-weight: bold;
+  padding: 10px 20px;
+}
+
+.nav-links {
+  /* Estilos para los enlaces de navegación */
+  margin-top: 20px;
+}
+
+.nav-links a {
+  /* Estilos para los enlaces de navegación */
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+}
+
+.nav-links a:hover {
+  /* Estilos para los enlaces de navegación cuando se hace hover */
+  background-color: var(--poseidon-nav-color2);
+}
+
+.content {
+  transition: margin-left 0.3s; /* Transición suave para el contenido */
+  margin-left: 0; /* Alinea el contenido principal con el borde izquierdo */
+}
+
+.content.expanded {
+  margin-left: 200px;
+}
+
+.navbar-modal {
+  transition: margin-left 0.3s; /* Transición suave para el contenido */
+  margin-left: 0; /* Alinea el contenido principal con el borde izquierdo */
+}
+
+.navbar-modal.expanded {
+  margin-left: 100px;
+}
+
+.toggle-sidebar-btn {
+  position: fixed; /* Fija la posición del botón */
+  top: 50%; /* Lo coloca en el centro verticalmente */
+  left: 0; /* Lo coloca al borde izquierdo */
+  transform: translateY(-50%); /* Ajusta para centrarlo verticalmente */
+  z-index: 101; /* Asegura que esté por encima del sidebar */
+  background-color: var(--poseidon-main-color); /* Color de fondo */
+  color: white; /* Color del ícono */
+  border: none; /* Sin borde */
+  cursor: pointer; /* Cursor al pasar sobre él */
+  padding: 10px; /* Espaciado interno */
+}
+
+
+/*Spinner prueba*/
+.spinner {
+  margin: 100px auto;
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.spinner div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  margin: 8px;
+  border: 8px solid #333;
+  border-radius: 50%;
+  animation: spinner 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #333 transparent transparent transparent;
+}
+
+.spinner div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+
+.spinner div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+
+.spinner div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

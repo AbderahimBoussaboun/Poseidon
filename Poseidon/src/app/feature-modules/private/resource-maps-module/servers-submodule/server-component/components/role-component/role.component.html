@@ -1,0 +1,151 @@
+<div class="row">
+    <div class="col-xxl-4"><h2>{{nameServer}} Roles</h2></div>
+    <div class="col-xxl-8">
+        <div class="mt-3">
+            <button *ngIf="loaded" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addRole" type="submit" (click)="resetFormValues()">Add Roles</button>     
+            <div *ngIf="loaded"><input type="text" class="form-control search-field poseidon-text-search float-end me-2" name="searchText" placeholder="Search Here" [(ngModel)]="searchText"></div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <table *ngIf="roles.length > 0 && loaded" class="table table-hover mt-3" style="text-align:center;">
+        <thead>
+            <tr>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="name">Role Name</th>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="nameServer">Server Name</th>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="type">Type</th>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="dateInsert">Insertion Date</th>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="dateModify">Modification Date</th>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="dateDisable">Deactivation Date</th>
+                <th scope="col" [appSort]="roles" data-order="desc" data-name="active">Active</th>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let i of $any (roles | searchFilter: searchText | slice: (page-1) * pageSize : page * pageSize)">
+                <td>
+                    <a routerLink="/administration/servers/{{idServer}}/roles/{{i.id}}/serverApplications">{{i.name}}</a>
+                </td>
+                <td>{{nameServer}}</td>
+                <td>{{i.type}}</td>
+                <td>{{i.dateInsert}}</td>
+                <td>{{i.dateModify}}</td>
+                <td>{{i.dateDisable}}</td>
+                <td>{{i.active}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal"
+                        data-bs-target="#editRole" (click)="modifyRole(i)">Edit</button>
+                    <!-- <button type="button" class="btn btn-outline-danger" (click)="deleteApplication(i)">Delete</button> -->
+                    <button type="button" class="btn btn-danger" (click)="openDialog(i)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ngb-pagination *ngIf="loaded && roles.length > 0" [(page)]="page" [pageSize]="pageSize" [collectionSize]="roles.length"></ngb-pagination>
+
+    <div *ngIf="roles?.length == 0 && loaded">
+        Upsss... This server has not got roles
+    </div>
+
+    <!-- Modal Add Role -->
+    <div class="modal fade" id="addRole" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <form [formGroup]="roleForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Role Name</label>
+                            <select class="form-select" id="name" formControlName="name">
+                                <option value="Web Server">Web Server</option>
+                                <option value="SQL Server">SQL Server</option>
+                                <option value="Queue Server">Queue Server</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serverId" class="form-label">Server Name</label>
+                            <input disabled type="text" class="form-control" id="serverId" aria-describedby="emailHelp"
+                                value="{{nameServer}}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Type</label>
+                            <input type="text" formControlName="type" class="form-control" id="type"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="roleForm.get('type')?.invalid && roleForm.get('type')?.touched"
+                                class="text-danger">
+                                The <strong>type</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="roleForm.invalid" class="btn btn-success float-end"
+                                data-bs-dismiss="modal" (click)="addRole()">Add Role</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Role -->
+    <div class="modal fade" id="editRole" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form [formGroup]="roleForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Role Name</label>
+                            <select class="form-select" id="name" formControlName="name">
+                                <option value="Web Server">Web Server</option>
+                                <option value="SQL Server">SQL Server</option>
+                                <option value="Queue Server">Queue Server</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Type</label>
+                            <input type="text" formControlName="type" class="form-control" id="type"
+                                aria-describedby="emailHelp">
+                            <span *ngIf="roleForm.get('type')?.invalid && roleForm.get('type')?.touched"
+                                class="text-danger">
+                                The <strong>type</strong> is required
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="active" class="form-label">Active</label>
+                            <select class="form-select" id="active" formControlName="active">
+                                <option [ngValue]="true">Yes</option>
+                                <option [ngValue]="false">No</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" [disabled]="roleForm.invalid" class="btn btn-outline-success" data-bs-dismiss="modal"
+                                (click)="updateRole()">Save
+                                Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+</div>
