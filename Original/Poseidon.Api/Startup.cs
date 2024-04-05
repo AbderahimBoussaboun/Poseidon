@@ -16,8 +16,14 @@ using Poseidon.Repositories.ResourceMaps.Interfaces;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Applications;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Nodes;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Products;
-using Poseidon.Repositories.ResourceMaps.Repositories;
 using Poseidon.Repositories.ResourceMaps.Repositories.Products;
+using Poseidon.Repositories.ResourceMaps.Repositories;
+using Poseidon.Repositories.ResourceMaps.Interfaces.Pools;
+using Poseidon.Repositories.ResourceMaps.Repositories.Pools;
+using Poseidon.Repositories.ResourceMaps.Interfaces.Rules;
+using Poseidon.Repositories.ResourceMaps.Repositories.Rules;
+using Poseidon.Repositories.ResourceMaps.Interfaces.Monitors;
+using Poseidon.Repositories.ResourceMaps.Repositories.Monitors;
 using Poseidon.Repositories.ResourceMaps.Repositories.Applications;
 using Poseidon.Repositories.ResourceMaps.Repositories.Nodes;
 using Poseidon.Repositories.ResourceMaps.Interfaces.Balancers;
@@ -79,7 +85,10 @@ namespace Poseidon.Api
             services.AddTransient<IBalancersRepository, BalancersRepository>();
             services.AddTransient<IServersRepository, ServersRepository>();
             services.AddTransient<IVirtualsRepository, VirtualsRepository>();
-
+            services.AddTransient<INodesRepository, NodesRepository>();
+            services.AddTransient<IPoolsRepository, PoolsRepository>();
+            services.AddTransient<IRulesRepository, RulesRepository>();
+            services.AddTransient<IMonitorsRepository, MonitorsRepository>();
 
             //Services
 
@@ -92,10 +101,13 @@ namespace Poseidon.Api
             services.AddScoped<IServersService, ServersService>();
             services.AddScoped<IServerApplicationsService, ServerApplicationsService>();
             services.AddScoped<IEnvironmentsService, EnvironmentsService>();
-            services.AddScoped<IInfraestructuresService, InfraestructuresService>();
+            services.AddScoped<IInfrastructuresService, InfrastructuresService>();
             services.AddScoped<IComponentTypesService, ComponentTypesService>();
             services.AddScoped<IVirtualsService, VirtualsService>();
             services.AddScoped<INodesRepository, NodesRepository>();
+            services.AddScoped<IPoolsRepository, PoolsRepository>();
+            services.AddScoped<IRulesRepository, RulesRepository>();
+            services.AddScoped<IMonitorsRepository, MonitorsRepository>();
 
 
             //Api swagger
@@ -113,8 +125,7 @@ namespace Poseidon.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Poseidon.Api v1"));
+               
             }
 
             app.UseHttpsRedirection();
@@ -124,6 +135,19 @@ namespace Poseidon.Api
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/poseidonapi/swagger/v1/swagger.json", "Poseidon.Api v1"));
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
+                {
+                    context.Response.Redirect("swagger/index.html");
+                    return;
+                }
+                await next();
+            });
 
             app.UseStatusCodePages();
 

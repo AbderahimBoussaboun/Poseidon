@@ -11,20 +11,19 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
     [Route("api/ResourceMaps/[controller]")]
     public class F5Controller : ControllerBase
     {
-
         #region POST
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ProcesarArchivo([FromForm] IFormFile archivo)
+        public async Task<IActionResult> ProcesarArchivo([FromForm] IFormFile archivo, string balancerName)
         {
-            if (archivo == null || archivo.Length == 0)
-            {
-                return BadRequest("Archivo no recibido o vacío");
-            }
-
             try
             {
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return BadRequest("Archivo no recibido o vacío");
+                }
+
                 // Crear un GUID o usar un timestamp para generar un nombre de archivo único
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + archivo.FileName;
 
@@ -41,21 +40,41 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                 // Unir directorio y nombre de archivo
                 var filePath = Path.Combine(tempFolderPath, uniqueFileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                // Agregar líneas al archivo antes de copiarlo
+                string[] linesToAdd = new string[]
+                {
+            "ltm monitor /Common/https {}",
+            "ltm monitor /Common/http {}",
+            "ltm monitor /Common/https_443 {}",
+            "ltm monitor /Common/tcp {}"
+                };
+
+                // Escribir líneas al archivo
+                using (StreamWriter writer = new StreamWriter(filePath, true))
+                {
+                    foreach (string line in linesToAdd)
+                    {
+                        writer.WriteLine(line);
+                    }
+                }
+
+                using (var stream = new FileStream(filePath, FileMode.Append))
                 {
                     await archivo.CopyToAsync(stream);
                 }
+
                 string logFilePath = ".\\log.txt";
 
                 // Llama al programa Python con el archivo
                 string scriptPath = ".\\Controllers\\ResourceMaps\\F5\\script\\parserator.py";
-                string argumentos = $"\"{filePath}\" > \"{logFilePath}\"";
+                string argumentos = $"\"{filePath}\" \"{balancerName}\""; // Agregar balancerName como argumento
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    FileName = "python", //Ejecutar python
-                    Arguments = $"{scriptPath} {argumentos}",
+                    FileName = @"C:\\Program Files\\Python312\\python.exe", //Ejecutar python
+                    Arguments = $"-u {scriptPath} {argumentos}",
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 };
@@ -63,15 +82,17 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                 using (Process proceso = new Process { StartInfo = startInfo })
                 {
                     proceso.StartInfo.RedirectStandardOutput = true;
-                    proceso.OutputDataReceived += (sender, args) => Console.WriteLine(args.Data);
-
-                    Console.WriteLine("Ejecutando script....");
+                    proceso.StartInfo.RedirectStandardError = true;
                     proceso.Start();
-                    proceso.BeginOutputReadLine(); // Comienza a redirigir la salida estándar
+
+                    // Lee la salida estándar y la salida de error y escribe en el archivo de registro
+                    using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                    {
+                        writer.WriteLine(proceso.StandardOutput.ReadToEnd());
+                        writer.WriteLine(proceso.StandardError.ReadToEnd());
+                    }
 
                     proceso.WaitForExit();
-
-                    Console.WriteLine("Hasta aquí todo bien");
                 }
 
                 // Elimina el archivo después de procesarlo
@@ -90,15 +111,22 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                 }
 
                 // Maneja cualquier resultado del programa Python si es necesario
-
                 return Ok("Procesamiento exitoso");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                // Loguear el error en un archivo
+                string logFilePath = ".\\error_log.txt";
+                using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                {
+                    writer.WriteLine($"[{DateTime.Now}] Error: {ex.Message}");
+                    writer.WriteLine($"StackTrace: {ex.StackTrace}");
+                    writer.WriteLine(); // Agregar una línea en blanco para separar los errores
+                }
+
+                return StatusCode(500, "Se ha producido un error. Consulte el archivo de registro para más detalles.");
             }
         }
-
 
         #endregion
     }

@@ -27,8 +27,8 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5.Queries
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Node>>> GetNodes()
         {
-            var virtuals = await _nodesRepository.GetAllNodes();
-            return Ok(virtuals);
+            var nodes = await _nodesRepository.GetAllNodes();
+            return Ok(nodes);
         }
 
 
@@ -36,14 +36,14 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5.Queries
         [HttpGet("{id}")]
         public async Task<ActionResult<Node>> GetNode(Guid id)
         {
-            var virtualEntity = await _nodesRepository.GetById<Node>(id);
+            var nodeEntity = await _nodesRepository.GetById<Node>(id);
 
-            if (virtualEntity == null)
+            if (nodeEntity == null)
             {
                 return NotFound();
             }
 
-            return Ok(virtualEntity);
+            return Ok(nodeEntity);
         }
 
         // POST: api/node

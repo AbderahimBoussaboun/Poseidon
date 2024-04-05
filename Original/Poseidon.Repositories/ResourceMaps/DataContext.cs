@@ -144,7 +144,7 @@ namespace Poseidon.Repositories.ResourceMaps
         public DbSet<ServerApplication> ServerApplications { get; set; }
         public DbSet<Environment> Environments { get; set; }
         public DbSet<ComponentType> ComponetTypes { get; set; }
-        public DbSet<Infraestructure> Infraestructures { get; set; }
+        public DbSet<Infrastructure> Infrastructures { get; set; }
         public DbSet<Virtual> Virtuals { get; set; }
         public DbSet<Pool> Pools { get; set; }
         public DbSet<Rule> Rules { get; set; }

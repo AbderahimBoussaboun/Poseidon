@@ -56,7 +56,8 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Virtuals
                                 Id = np.Node.Id, // y así sucesivamente para otras propiedades excepto 'NodePools'
                                 Ip = np.Node.Ip,
                                 Description = np.Node.Description,
-                            }
+                            },
+                            NodePort = np.NodePort
                         }).ToList()
                     },
                     Rules = v.Rules,

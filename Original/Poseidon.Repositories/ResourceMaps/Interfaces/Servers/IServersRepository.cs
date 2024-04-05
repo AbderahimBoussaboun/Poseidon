@@ -35,7 +35,7 @@ namespace Poseidon.Repositories.ResourceMaps.Interfaces.Servers
         public Task<List<ServerApplication>> GetAllServerApplications();
         public Task<ServerApplication> GetServerApplicationById(Guid serverApplicationId);
         public Task<Guid> InsertServerApplicationEntity(Guid serverId, Guid roleId, ServerApplication serverApplication);
-        public Task<bool> UpdateServerApplicationEntity(Guid serverId, Guid roleId, Guid serverApplicationId,ServerApplication serverApplication);
+        public Task<bool> UpdateServerApplicationEntity(Guid serverId, Guid roleId, Guid serverApplicationId, ServerApplication serverApplication);
         public Task<bool> DeleteServerApplicationEntity(Guid serverId, Guid roleId, Guid serverApplicationId);
         #endregion
 
@@ -47,12 +47,12 @@ namespace Poseidon.Repositories.ResourceMaps.Interfaces.Servers
         public Task<bool> DeleteEnvironmentEntity(Guid environmentId);
         #endregion
 
-        #region INFRAESTRUCTURE
-        public Task<List<Infraestructure>> GetAllInfraestructures();
-        public Task<Infraestructure> GetInfraestructureById(Guid infraestructureId);
-        public Task<Guid> InsertInfraestructureEntity(Infraestructure infraestructure);
-        public Task<bool> UpdateInfraestructureEntity(Infraestructure infraestructure);
-        public Task<bool> DeleteInfraestructureEntity(Guid infraestructureId);
+        #region INFRASTRUCTURE
+        public Task<List<Infrastructure>> GetAllInfrastructures();
+        public Task<Infrastructure> GetInfrastructureById(Guid infrastructureId);
+        public Task<Guid> InsertInfrastructureEntity(Infrastructure infrastructure);
+        public Task<bool> UpdateInfrastructureEntity(Infrastructure infrastructure);
+        public Task<bool> DeleteInfrastructureEntity(Guid infrastructureId);
         #endregion
 
     }

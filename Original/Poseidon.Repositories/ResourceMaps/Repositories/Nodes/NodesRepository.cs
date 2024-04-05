@@ -39,6 +39,7 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Nodes
 
                         Pool = new Pool
                         {
+                            Name=np.Pool.Name,
                             Monitor = np.Pool.Monitor,
                             BalancerType = np.Pool.BalancerType,
                             Description = np.Pool.Description,

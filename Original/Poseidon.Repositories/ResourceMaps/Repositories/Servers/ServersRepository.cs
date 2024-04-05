@@ -34,7 +34,7 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
        {
        };
 
-        Expression<Func<Infraestructure, object>>[] includesInfraestructure = new Expression<Func<Infraestructure, object>>[]
+        Expression<Func<Infrastructure, object>>[] includesInfrastructure = new Expression<Func<Infrastructure, object>>[]
        {
        };
 
@@ -56,7 +56,8 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
             return result;
         }
 
-        public async Task<List<Role>> GetAllRolesByServerId(Guid serverId) {
+        public async Task<List<Role>> GetAllRolesByServerId(Guid serverId)
+        {
             try
             {
                 var result = await base.GetById(serverId, includesServer);
@@ -68,7 +69,8 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
                 return null;
             }
         }
-        public async Task<Role> GetRoleByServerId(Guid serverId, Guid roleId) {
+        public async Task<Role> GetRoleByServerId(Guid serverId, Guid roleId)
+        {
             try
             {
                 var result = await base.GetById(serverId, includesServer);
@@ -81,7 +83,8 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
                 return null;
             }
         }
-        public async Task<List<ServerApplication>> GetAllServerApplicationsByRoleId(Guid serverId, Guid roleId) {
+        public async Task<List<ServerApplication>> GetAllServerApplicationsByRoleId(Guid serverId, Guid roleId)
+        {
             try
             {
                 var role = await base.GetById(roleId, includesRole);
@@ -93,7 +96,8 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
                 return null;
             }
         }
-        public async Task<ServerApplication> GetServerApplicationByRoleId(Guid serverId, Guid roleId, Guid serverApplicationId) {
+        public async Task<ServerApplication> GetServerApplicationByRoleId(Guid serverId, Guid roleId, Guid serverApplicationId)
+        {
             try
             {
                 var server = await base.GetById(serverId, includesServer);
@@ -218,7 +222,7 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
 
                 return Guid.Empty;
             }
-           
+
         }
         public async Task<bool> UpdateServerApplicationEntity(Guid serverId, Guid roleId, Guid serverApplicationId, ServerApplication serverApplication)
         {
@@ -237,7 +241,7 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
                 return false;
             }
 
-            
+
         }
         public async Task<bool> DeleteServerApplicationEntity(Guid serverId, Guid roleId, Guid serverApplicationId)
         {
@@ -291,31 +295,33 @@ namespace Poseidon.Repositories.ResourceMaps.Repositories.Servers
         }
         #endregion
 
-        #region INFRAESTRUCTURE
-        public async Task<List<Infraestructure>> GetAllInfraestructures() {
-            var result = await base.GetAll(includesInfraestructure);
+        #region INFRASTRUCTURE
+        public async Task<List<Infrastructure>> GetAllInfrastructures()
+        {
+            var result = await base.GetAll(includesInfrastructure);
             return result;
         }
-        public async Task<Infraestructure> GetInfraestructureById(Guid infraestructureId) {
-            var result = await base.GetById(infraestructureId, includesInfraestructure);
+        public async Task<Infrastructure> GetInfrastructureById(Guid infrastructureId)
+        {
+            var result = await base.GetById(infrastructureId, includesInfrastructure);
             return result;
         }
-        public async Task<Guid> InsertInfraestructureEntity(Infraestructure infraestructure) {
-            var result = await base.InsertEntity(infraestructure);
+        public async Task<Guid> InsertInfrastructureEntity(Infrastructure infrastructure)
+        {
+            var result = await base.InsertEntity(infrastructure);
             return result;
         }
-        public async Task<bool> UpdateInfraestructureEntity(Infraestructure infraestructure) {
-            var result = await base.UpdateEntity(infraestructure);
+        public async Task<bool> UpdateInfrastructureEntity(Infrastructure infrastructure)
+        {
+            var result = await base.UpdateEntity(infrastructure);
             return result;
         }
-        public async Task<bool> DeleteInfraestructureEntity(Guid infraestructureId) {
-            var result = await base.DeleteEntity<Infraestructure>(infraestructureId);
+        public async Task<bool> DeleteInfrastructureEntity(Guid infrastructureId)
+        {
+            var result = await base.DeleteEntity<Infrastructure>(infrastructureId);
             return result;
         }
         #endregion
-
-
-
 
     }
 }

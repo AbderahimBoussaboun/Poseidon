@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 
 namespace Poseidon.Repositories.ResourceMaps.Configurations.Servers
 {
-    class InfraestructureConfiguration : IEntityTypeConfiguration<Infraestructure>
+    class InfrastructureConfiguration : IEntityTypeConfiguration<Infrastructure>
     {
-        public void Configure(EntityTypeBuilder<Infraestructure> builder)
+        public void Configure(EntityTypeBuilder<Infrastructure> builder)
         {
-            //Primary Key
+            // Primary Key
             builder.HasKey(e => e.Id);
 
-            //Properties
-            builder.Property(e => e.Id).HasDefaultValueSql("NEWID()").HasColumnName("InfraestructureId");
+            // Properties
+            builder.Property(e => e.Id).HasDefaultValueSql("NEWID()").HasColumnName("InfrastructureId");
             builder.Property(e => e.Name).IsRequired();
         }
     }
