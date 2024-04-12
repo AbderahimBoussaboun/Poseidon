@@ -56,6 +56,8 @@ export class NavbarModalComponent implements OnInit, OnDestroy {
     if (this.archivoSeleccionado) {
       const formData: FormData = new FormData();
       formData.append('archivo', this.archivoSeleccionado, this.archivoSeleccionado.name);
+      formData.append('balancerName', this.selectedBalanceador);
+      formData.append('commitMessage', this.commitMessage);
       this.isSubmitting = true;
       this.http.post('http://cpdcrprems02.idc.local/PoseidonApi/api/ResourceMaps/F5', formData, { responseType: 'text' })
         .pipe(takeUntil(this.destroy$))
@@ -77,6 +79,7 @@ export class NavbarModalComponent implements OnInit, OnDestroy {
       this.mensajeError = 'No se ha seleccionado ningún archivo.';
     }
   }
+  
 
   limpiarInputArchivo(): void {
     if (this.myInputVariable) {

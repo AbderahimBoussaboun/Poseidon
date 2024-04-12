@@ -19,13 +19,12 @@
         <input #fileInput type="file" class="mb-3" (change)="handleFileInput($any($event.target).files)">
 
         <!-- Dropdown para seleccionar el balanceador -->
-        <!-- Dropdown para seleccionar el balanceador -->
         <div class="form-group">
           <label for="balanceadorSelect"><strong>Which balancer does the file belong to?:</strong><span class="text-danger">*</span></label>
           <select class="form-control" id="balanceadorSelect" [(ngModel)]="selectedBalanceador" required>
             <option value="" disabled [selected]="true" hidden>Select Balancer</option>
             <!-- Iterar sobre la lista de balanceadores -->
-            <option *ngFor="let balancer of balancers" [value]="balancer.id">{{ balancer.name }}</option>
+            <option *ngFor="let balancer of balancers" [value]="balancer.name">{{ balancer.name }}</option>
           </select>
         </div>
 

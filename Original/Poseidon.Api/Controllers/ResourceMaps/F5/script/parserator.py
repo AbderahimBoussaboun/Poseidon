@@ -17,7 +17,7 @@ try:
         # Segundo argumento: Nombre del balanceador
         balancer_name = sys.argv[2]
         # Tercer argumento: Mensaje de commit
-        commit_message = sys.argvs[3]
+        commit_message = sys.argv[3]
         print(
             f"Procesando el archivo: {origin} para el balanceador: {balancer_name}")
 
@@ -60,7 +60,7 @@ try:
                 table_name = table_name[:-1]
 
             # Obtener todos los nodos existentes en la base de datos
-            cursor.execute(f"SELECT {id_column}, Name FROM {table_name}s")
+            cursor.execute(f"SELECT {id_column}, Name FROM {table_name.lower()}s INNER JOIN Balancer{table_name} ON {table_name.lower()}s.{id_column}=Balancer{table_name}.{table_name.lower()}_id")
             existing_entities = cursor.fetchall()
 
             entities_to_disable = []
@@ -84,7 +84,7 @@ try:
                     cursor.execute(f"UPDATE {table_name}s SET Active = 0, DateDisable = ? WHERE {id_column} = ?", (datetime.datetime.now(), entity_id))
 
         def update_status_history(entity_id, is_active, table_name):
-            cursor.execute(f"INSERT INTO {table_name}StatusHistory ({table_name}Id, BalancerId, DateChange, Active, CommitMessage) VALUES (?, ?, ?, ?, ?)",
+            cursor.execute(f"INSERT INTO {table_name}StatusHistory ({table_name}Id, BalancerId, DateChange, isActive, CommitMessage) VALUES (?, ?, ?, ?, ?)",
                    (entity_id, balancer_id, datetime.datetime.now(), is_active, commit_message))
 
       
@@ -96,7 +96,7 @@ try:
                 table_name (str): The name of the table.
                 columns (list): A list of column names.
                 values (list): A list of values to be inserted or updated.
-            """
+            
             # Check if the table has a primary key
             cursor.execute(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME = '{table_name}'")
             primary_key = cursor.fetchone()
@@ -104,16 +104,16 @@ try:
             if primary_key:
                 # If the table has a primary key, try to update the existing record
                 set_values = ', '.join([f"{col} = ?" for col in columns])
-                cursor.execute(f"UPDATE {table_name} SET {set_values} WHERE {primary_key[0]} = ?", values + [values[0]])
+                cursor.execute(f"UPDATE {table_name}StatusHistory SET {set_values} WHERE {primary_key[0]} = ?", values + [values[0]])
                 # Check if the update affected any row
                 if cursor.rowcount == 0:
                     # If no rows were updated, insert a new record
                     placeholders = ', '.join(['?' for _ in columns])
-                    cursor.execute(f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})", values)
+                    cursor.execute(f"INSERT INTO {table_name}StatusHistory ({', '.join(columns)}) VALUES ({placeholders})", values)
             else:
                 # If the table doesn't have a primary key, just insert a new record
                 placeholders = ', '.join(['?' for _ in columns])
-                cursor.execute(f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})", values)
+                cursor.execute(f"INSERT INTO {table_name}StatusHistory ({', '.join(columns)}) VALUES ({placeholders})", values)"""
 
         def insert_entity(table_name, columns, values):
             """
@@ -125,8 +125,12 @@ try:
                 columns (list): A list of column names.
                 values (list): A list of values to be inserted.
             """
+            column_names = ', '.join(columns)
             placeholders = ', '.join(['?' for _ in columns])
-            cursor.execute(f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})", values)
+            #consulta=(f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})", values)
+            #if table_name=="Pools":
+            #    print("CONSULTAS INSERT BALANCERNODEPOOL: ",consulta)
+            cursor.execute(f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})", values)
 
         def update_entity(table_name, columns, values, primary_key):
             """
@@ -139,7 +143,9 @@ try:
                     values (list): A list of new values.
                     primary_key (str): The name of the primary key column.
             """
-            set_values = ', '.join([f"{col} = ?" for col in columns])
+            set_values = ', '.join([f"{col} = ?" for col in columns])  
+            consulta=(f"UPDATE {table_name} SET {set_values} WHERE {primary_key} = ?", values) 
+            print("Esta es la consulta UPDATE: ", consulta)
             cursor.execute(f"UPDATE {table_name} SET {set_values} WHERE {primary_key} = ?", values)        
 
         ##########################################################################################################################
@@ -199,8 +205,8 @@ try:
                 # Si el objeto es una pool...
                 elif object == "pool":
                     # Patrón para localizar y capturar los mimebros de la pool
-                    pattern5 = re.compile(
-                        r'ltm pool '+subobject+'\s+{\s+(?:description\s+(?:"[^"]+"|\S+))?\s+(?:load-balancing-mode\s+[^\s]+)?\s+(?:members\s+{\s+(([^\s}]+)(?:[^}]+}\s*)*)*})?')
+                    pattern5 = re.compile(r'ltm pool ' + re.escape(subobject) + r' +{\s+(?:description\s+(?:"[^"]+"|\S+))?\s+(?:load-balancing-mode\s+[^\s]+)?\s+(?:members\s+{\s+(([^\s}]+)(?:[^}]+}\s*)*)*})?')
+
                     # Array para separar cada uno de los miembros en posiciones independientes
                     coincidencias = re.search(pattern5, config)
                     # Si existen coinicidencias...
@@ -354,8 +360,8 @@ try:
                         pattern2 = re.compile(
                             r'ltm virtual(?:.*?)(?=ltm virtual|$|pool\s)(?:pool\s+([^\s]+))?', re.DOTALL)
                         assignedPool = pattern2.findall(config)
-                    pattern3 = re.compile(
-                        r'ltm virtual '+subobject+'(?:.*?)(?=ltm virtual|$|rules\s)(?:rules\s+(.*?)(?=}))?', re.DOTALL)
+                    pattern3 = re.compile(r'ltm virtual ' + re.escape(subobject) + r'(?:.*?)(?=ltm virtual|$|rules )(?:rules +(.*?)(?=}))?', re.DOTALL)
+
                     coincidencias = re.search(pattern3, config)
                     try:
                         rules = re.findall(
@@ -370,11 +376,14 @@ try:
                     i = i+1
                 # Si el objeto no es ni un nodo ni una pool...
                 else:
+                    print("Subobject: ",subobject)
                     pattern2 = re.compile(
-                        r'ltm rule '+subobject+' (?:.*?)(?=ltm rule|if\s)(?:(.*?))?(?=}}|ltm rule)', re.DOTALL)
+                                r'ltm rule ' + re.escape(subobject) + r' (?:.*?)(?=ltm rule|if\s)(?:(.*?))?(?=}}|ltm rule|ltm)', re.DOTALL)
                     # (?:.*?)(?=ltm rule|$|if\s)(?:if\s*{\s*[(.*?)(?=}))?
                     coincidencias = re.search(pattern2, config)
-                    coinicidencias2 = pattern2.findall(config)
+                    if subobject == "/Common/https_request_casioserviceshiscl3.idc.local":
+                        print(coincidencias)
+                    #coinicidencias2 = pattern2.findall(config)
                     if coincidencias:
                         pools = re.findall(
                             r'if[^{]+[^}]+}\s+(?:(?:.*?)(?=pool|node|virtual)((?:pool|node|virtual)\s+[^\s]+))?', coincidencias.group(1), re.DOTALL)
@@ -421,7 +430,7 @@ try:
 
                 try:
                     # Iniciar una transacción
-                    cursor.execute("BEGIN TRANSACTION")
+                    #cursor.execute("BEGIN TRANSACTION")
 
                     disable_relationships(df_monitors, 'monitor', 'Monitors', 'MonitorId')
        
@@ -446,7 +455,8 @@ try:
                             
 
                             # Obtener el ID del monitor insertado
-                            cursor.execute("SELECT SCOPE_IDENTITY()")
+                            #cursor.execute("SELECT SCOPE_IDENTITY()")
+                            cursor.execute("SELECT MonitorId FROM Monitors WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", monitor_name)
                             monitor_id = cursor.fetchone()[0]
 
                             # Insertar en BalancerMonitor                            
@@ -485,14 +495,15 @@ try:
        
                     # Volver a habilitar los monitores que han reaparecido
                     for monitor_id in monitors_to_enable:
-                        update_status_history(monitor_id, True, "Monitor")
+                        update_status_history(monitor_id, True, "Monitor" )
 
                     # Confirmar la transacción
-                    cursor.execute("COMMIT")
+                    #cursor.execute("COMMIT")
 
                 except Exception as e:
                     # Revertir la transacción en caso de error
-                    cursor.execute("ROLLBACK")
+                    #cursor.execute("ROLLBACK")
+                    print(Exception)
 
             elif object == 'pool':
                 df_pools = pd.read_csv('pools.csv')
@@ -505,10 +516,10 @@ try:
                 pool_columns = ['MonitorId', 'Active', 'BalancerType', 'DateInsert', 'Description', 'Name']
                 node_columns = ['Active', 'DateInsert', 'Description', 'IP', 'Name']
                 bn_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'node_id', 'balancer_id']
-                bnp_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'node_id', 'pool_id']
+                bnp_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'node_id', 'pool_id', 'balancer_id']
                 np_columns = ['NodeId', 'PoolId', 'Active', 'DateInsert', 'Name', 'NodePort']
   
-                disable_relationships(cursor, df_pools, 'Pool', 'Pools', 'PoolId')
+                disable_relationships(df_pools, 'Pool', 'Pools', 'PoolId')
 
                 # Lista para mantener los pools que necesitan ser habilitados en BalancerPool
                 pools_to_enable = []
@@ -547,8 +558,8 @@ try:
 
                     if active_count == 0:
                         # Deshabilitar el registro en NodePool
-                        cursor.execute("UPDATE NodePool SET Active = 0, DateDisable = ? WHERE node_id = ? AND pool_id = ? AND balancer_id = ?", 
-                                    (datetime.datetime.now(), node_id, pool_id, balancer_id))
+                        cursor.execute("UPDATE NodePool SET Active = 0, DateDisable = ? WHERE NodeId = ? AND PoolId = ?", 
+                                    (datetime.datetime.now(), node_id, pool_id))
 
                 # Iterar a través de las filas del DataFrame
                 for row in df_pools.itertuples():
@@ -576,7 +587,7 @@ try:
 
                 for row in df_pools.itertuples():
                     balancer_type_index = df_pools.columns.get_loc('Tipo Balanceo (Pool)')
-                    description_index = df_pools.get_loc('Descripción (Pool)')
+                    description_index = df_pools.columns.get_loc('Descripción (Pool)')
                     pool_name = row.Pool
 
                     # Verificar si ya existe un registro con el mismo valor en la columna 'Name'
@@ -626,213 +637,261 @@ try:
                             # Agregar a la lista de monitores que han sido habilitados
                             pools_to_enable.append(fetched_pool[0])
 
-                        else:
-                            # El pool no existe en la tabla Pools
-                            # Insertar un nuevo registro en la tabla Pools
-                            values = [df_pools.at[row.Index, 'MonitorId'], True, row[balancer_type_index + 1], datetime.datetime.now(), row[description_index + 1], pool_name]
-                            insert_entity("Pools", pool_columns, values)
+                    else:
+                        # El pool no existe en la tabla Pools
+                        # Insertar un nuevo registro en la tabla Pools
+                        values = [df_pools.at[row.Index, 'MonitorId'], True, row[balancer_type_index + 1] if not pd.isna(row[balancer_type_index + 1]) else "", datetime.datetime.now(), row[description_index + 1] if not pd.isna(row[description_index + 1]) else "", pool_name]
+                        insert_entity("Pools", pool_columns, values)
 
-                            # Obtener el PoolId del nuevo registro insertado
-                            cursor.execute("SELECT SCOPE_IDENTITY()")
-                            new_pool_id = cursor.fetchone()[0]
+                        # Obtener el PoolId del nuevo registro insertado
+                        #cursor.execute("SELECT SCOPE_IDENTITY()")
+                        cursor.execute("SELECT PoolId FROM Pools WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", pool_name)
+                        new_pool_id = cursor.fetchone()[0]
 
-                            # Insertar el nuevo registro en BalancerPool
-                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, new_pool_id, balancer_id]
-                            insert_entity("BalancerPool", bp_columns, values)
+                        # Insertar el nuevo registro en BalancerPool
+                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, new_pool_id, balancer_id]
+                        insert_entity("BalancerPool", bp_columns, values)
 
-                            # Agregar a la lista de monitores que han sido habilitados
-                            pools_to_enable.append(new_pool_id)
+                        # Agregar a la lista de monitores que han sido habilitados
+                        pools_to_enable.append(new_pool_id)
                     
-                        name_member = df_pools.columns.get_loc('Nombre (Miembro):')
+                    name_member = df_pools.columns.get_loc('Nombre (Miembro):')
 
-                        if row[name_member + 1] != '':
-                            member_name = row[name_member + 1]  # Nombre (Miembro)
+                    if row[name_member + 1] != '':
+                        member_name = row[name_member + 1]  # Nombre (Miembro)
 
-                            # Verificar si ya existe un registro con el mismo valor en la columna 'Name' en Nodes
-                            cursor.execute("SELECT COUNT(*) FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS  = ?", (member_name))
-                            result2 = cursor.fetchone()
+                        # Verificar si ya existe un registro con el mismo valor en la columna 'Name' en Nodes
+                        cursor.execute("SELECT COUNT(*) FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", (member_name))
+                        result2 = cursor.fetchone()
 
-                            if result2 is not None and result2[0] > 0:
-                                print(f"Registro existente para Miembro: {member_name} De Pool: {pool_name} No se inserta pero se asigna a pool si no lo estaba.") 
-                                cursor.execute("SELECT NodeId FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", (member_name,)) 
-                                node_exists=cursor.fecthone()
 
-                                if node_exists is not None:
-                                    cursor.execute("SELECT Active FROM NodePool WHERE NodeId = ? AND PoolId = ?",())                              
-                            else:
-                                description_node = df_pools.columns.get_loc('Descripción (Miembro):')
-                                direction_member = df_pools.columns.get_loc('Dirección (Miembro):')
+                        if result2 is not None and result2[0] > 0:
+                            print(f"Registro existente para Miembro: {member_name} De Pool: {pool_name} No se inserta pero se asigna a pool si no lo estaba.") 
+                            cursor.execute("SELECT NodeId FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", (member_name,)) 
+                            node_exists=cursor.fetchone()
 
-                                # Insertar en la tabla Nodes
-                                values = [True, datetime.datetime.now(), row[description_node + 1], row[direction_member + 1], member_name]
-                                insert_entity("Nodes", node_columns, values)
+                            cursor.execute("SELECT PoolId FROM Pools WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", (pool_name,))
+                            pool_exists=cursor.fetchone()
+                                
+                            if node_exists[0] is not None:
+                                cursor.execute("SELECT Active FROM NodePool WHERE NodeId = ? AND PoolId = ?",(node_exists[0], pool_exists[0]))
+                                node_pool_active=cursor.fetchone()
 
-                                # Obtener el ID del node insertado
-                                cursor.execute("SELECT SCOPE_IDENTITY()")
-                                member_id = cursor.fetchone()[0]
+                                if node_pool_active is None:
+                                    node_pool_name = f"{member_name}----{pool_name}"
+                                    port_member = df_pools.columns.get_loc('Puerto (Miembro):')                                        
+                                    values = [node_exists[0], pool_exists[0], True, datetime.datetime.now(), node_pool_name, row[port_member + 1]]
+                                    insert_entity("NodePool", np_columns, values)
 
-                                values = [datetime.datetime.now(), datetime.datetime.now(), None, True, member_id, balancer_id[0]]
-                                insert_entity("BalancerNode", bn_columns, values)
-
-                            # Verificar si ya existe un registro con el mismo valor en la tabla NodePool
-                            node_pool_name = f"{member_name}----{pool_name}"
-                            cursor.execute("""
-                                SELECT COUNT(*)
-                                FROM NodePool
-                                WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?
-                            """, (node_pool_name,))
-                            result3 = cursor.fetchone()
-
-                            if result3 and result3[0] > 0:
-                                print(f"Registro duplicado para NodePool: {node_pool_name}")
-
-                                # Verificar si existe en BalancerNode y activarlo en caso de estar desactivado
-                                cursor.execute("""
-                                    SELECT Active
-                                    FROM BalancerNodePool
-                                    WHERE pool_id = ? AND node_id = ? AND balancer_id = ?
-                                """, (fetched_pool[0], member_id, balancer_id[0]))
-                                bn_result = cursor.fetchone()
-
-                                if bn_result[0] is not None and bn_result[0]==0:
-                                    # El registro existe en BalancerPool
-                                    cursor.execute('''
-                                        UPDATE BalancerNodePool
-                                        SET Active = ?
-                                        WHERE pool_id = ? AND node_id = ? AND balancer_id = ?
-                                    ''', (True, fetched_pool[0], member_id, balancer_id[0]))
-                                    nodepool_to_enable.append((node_id, pool_id)) 
-
-                                elif bn_result is None:
-                                    # El registro no existe en BalancerPool, insertarlo
-                                    values = [datetime.datetime.now(), datetime.datetime.now(), None, True, member_id, fetched_pool[0]]
+                                    values = [datetime.datetime.now(), datetime.datetime.now(), None, True, node_exists[0], pool_exists[0], balancer_id]
                                     insert_entity("BalancerNodePool", bnp_columns, values)
-                                    nodepool_to_enable.append((node_id, pool_id))   
-                                                                     
-                            else:
-                                port_member = df.columns.get_loc('Puerto (Miembro):')
 
-                                # Insertar en la tabla NodePool
-                                values = [member_id, fetched_pool[0], True, datetime.datetime.now(), node_pool_name, row[port_member + 1]]
-                                insert_entity("NodePool", np_columns, values)
+                                    nodepool_to_enable.append((node_exists[0],  pool_exists[0]))
+                                elif node_pool_active[0]==0:
+                                    cursor.execute("UPDATE NodePool SET Active=1, DateDisable = ?, DateModify = ? WHERE NodeId = ? AND PoolId = ?",(None, datetime.datetime.now(), node_exists[0], pool_exists[0])) 
 
-                                # Insertar en la tabla BalancerNodePool
-                                values = [datetime.datetime.now(), datetime.datetime.now(), None, True, member_id[0], fetched_pool[0]]
+                                    cursor.execute("""
+                                        SELECT Active
+                                        FROM BalancerNodePool
+                                        WHERE pool_id = ? AND node_id = ? AND balancer_id = ?
+                                    """, (pool_exists[0], node_exists[0], balancer_id))
+                                    bnp_result = cursor.fetchone()   
+
+                                    if bnp_result[0] is None:
+                                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, node_exists[0], pool_exists[0], balancer_id]
+                                        insert_entity("BalancerNodePool", bnp_columns, values)
+                                    elif bnp_result[0]==0:
+                                        cursor.execute('''
+                                            UPDATE BalancerNodePool
+                                            SET Active = ?, DateDisable = ?, DateModify = ?
+                                            WHERE pool_id = ? AND node_id = ? AND balancer_id = ?
+                                        ''', (True,None, datetime.datetime.now(), pool_exists[0], node_exists[0], balancer_id))
+                                    nodepool_to_enable.append((node_exists[0],  pool_exists[0]))
+                        else:
+                            description_node = df_pools.columns.get_loc('Descripción (Miembro):')
+                            direction_member = df_pools.columns.get_loc('Dirección (Miembro):')
+
+                            # Insertar en la tabla Nodes
+                            values = [True, datetime.datetime.now(), row[description_node + 1], row[direction_member + 1], member_name]
+                            insert_entity("Nodes", node_columns, values)
+
+                            # Obtener el ID del node insertado
+                            #cursor.execute("SELECT SCOPE_IDENTITY()")
+                            cursor.execute("SELECT NodeId FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", member_name)
+                            member_id = cursor.fetchone()[0]
+
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, member_id, balancer_id]
+                            insert_entity("BalancerNode", bn_columns, values)
+
+                        # Verificar si ya existe un registro con el mismo valor en la tabla NodePool
+                        node_pool_name = f"{member_name}----{pool_name}"
+                        cursor.execute("""
+                            SELECT Active
+                            FROM NodePool
+                            WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?
+                        """, (node_pool_name,))
+                        result3 = cursor.fetchone()
+
+                        cursor.execute("SELECT PoolId FROM Pools WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", (pool_name,))
+                        fetched_pool=cursor.fetchone()
+
+                        cursor.execute("SELECT NodeId FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", member_name)
+                        member_id = cursor.fetchone()[0]
+
+                        if result3[0] is not None:
+                            print(f"Registro duplicado para NodePool: {node_pool_name}")
+
+                            if result3[0]==0:
+                                cursor.execute("UPDATE NodePool SET Active=1, DateDisable = ?, DateModify = ? WHERE NodeId = ? AND PoolId = ?",(None, datetime.datetime.now(), member_id, fetched_pool[0])) 
+
+                            # Verificar si existe en BalancerNode y activarlo en caso de estar desactivado
+                            cursor.execute("""
+                                SELECT Active
+                                FROM BalancerNodePool
+                                WHERE pool_id = ? AND node_id = ? AND balancer_id = ?
+                            """, (fetched_pool[0], member_id, balancer_id))
+                            bn_result = cursor.fetchone()
+
+                            if bn_result[0] is not None and bn_result[0]==0:
+                                # El registro existe en BalancerPool
+                                cursor.execute('''
+                                    UPDATE BalancerNodePool
+                                    SET Active = ?, DateDisable = ?, DateModify = ?,
+                                    WHERE pool_id = ? AND node_id = ? AND balancer_id = ?
+                                ''', (True, None, datetime.datetime.now(), fetched_pool[0], member_id, balancer_id))
+
+                            elif bn_result is None:
+                                # El registro no existe en BalancerPool, insertarlo
+                                values = [datetime.datetime.now(), datetime.datetime.now(), None, True, member_id, fetched_pool[0], balancer_id]
                                 insert_entity("BalancerNodePool", bnp_columns, values)
+                            
+                            nodepool_to_enable.append((member_id, fetched_pool[0]))  
+                                                                    
+                        else:
+                            port_member = df_pools.columns.get_loc('Puerto (Miembro):')
 
-                                nodepool_to_enable.append((node_id, pool_id)) 
+                            # Insertar en la tabla NodePool
+                            values = [member_id, fetched_pool[0], True, datetime.datetime.now(), node_pool_name, row[port_member + 1]]
+                            insert_entity("NodePool", np_columns, values)
+
+                            # Insertar en la tabla BalancerNodePool
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, member_id, fetched_pool[0], balancer_id]
+                            insert_entity("BalancerNodePool", bnp_columns, values)
+
+                            nodepool_to_enable.append((member_id, fetched_pool[0])) 
 
                # Volver a habilitar los pools que han reaparecido
-                for pool_id, pool_name in pools_to_enable:
+                for pool_id in pools_to_enable:
                     update_status_history(pool_id, True, "Pool")
                                     
                 # Deshabilitar los nodepools en la tabla NodePool
                 for node_id, pool_id in nodepool_to_disable:
-                    cursor.execute("INSERT INTO NodePoolStatusHistory (NodeId, PoolId, BalancerId, DateChange, IsActive, CommitMessage) VALUES (?, ?, ?, ?, ?, ?)", (node_id, pool_id, balancer_id[0], datetime.datetime.now(), False, commit_message))
+                    cursor.execute("INSERT INTO NodePoolStatusHistory (NodeId, PoolId, BalancerId, DateChange, IsActive, CommitMessage) VALUES (?, ?, ?, ?, ?, ?)", (node_id, pool_id, balancer_id, datetime.datetime.now(), False, commit_message))
 
                 # Volver a habilitar los nodepools que han reaparecido
                 for node_id, pool_id in nodepool_to_enable:
-                    cursor.execute("INSERT INTO NodePoolStatusHistory (NodeId, PoolId, BalancerId, DateChange, IsActive, CommitMessage) VALUES (?, ?, ?, ?, ?, ?)", (node_id, pool_id, balancer_id[0], datetime.datetime.now(), True, commit_message))
+                    cursor.execute("INSERT INTO NodePoolStatusHistory (NodeId, PoolId, BalancerId, DateChange, IsActive, CommitMessage) VALUES (?, ?, ?, ?, ?, ?)", (node_id, pool_id, balancer_id, datetime.datetime.now(), True, commit_message))
 
-                # Confirmar la transacción
-                cursor.commit()
-           
+          
             elif object == 'virtual':
-                data = pd.read_csv('virtuals.csv')
+                df_virtuals = pd.read_csv('virtuals.csv')
 
-                data = df.where(pd.notna(df), None)
+                df_virtuals = df_virtuals.where(pd.notna(df_virtuals), None)
 
-                df_virtuals = pd.DataFrame(data)
+                df_virtuals = pd.DataFrame(df_virtuals)
 
                 virtual_columns = ['Active', 'DateInsert', 'Name', 'PoolId']
-                bv_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'VirtualId', 'BalancerId']
-                br_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'RuleId', 'BalancerId']
+                bv_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'virtual_id', 'balancer_id']
+                br_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'rule_id', 'balancer_id']
                 rule_columns = ['Active', 'DateInsert', 'Name', 'VirtualId']
 
-                disable_relationships(cursor, df_virtuals, 'virtual', 'Virtuals', 'VirtualId')
+                disable_relationships(df_virtuals, 'virtual', 'Virtuals', 'VirtualId')
             
                 # Lista para mantener los virtuals que necesitan ser habilitados en BalancerVirtual
                 virtuals_to_enable = []
 
-                for row in df.itertuples():
+                for row in df_virtuals.itertuples():
                     cursor.execute(
-                        "SELECT COUNT(*) FROM Virtuals WHERE Name=?", (row.virtual,))
+                        "SELECT COUNT(*) FROM Virtuals WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", (row.virtual,))
                     result4 = cursor.fetchone()
 
                     cursor.execute(
-                            "SELECT PoolId FROM Pools WHERE Name=?", row.POOL)
+                            "SELECT PoolId FROM Pools WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", row.POOL)
                     poolId = cursor.fetchone()
 
                     # Asignar el valor de PoolId a None si poolId es nulo
                     PoolId = poolId[0] if poolId is not None else None
 
-                    if result4 and result4[0] > 0:
+                    if result4[0] is not None and result4[0] > 0:
                         print(f"Registro duplicado para: {row.virtual}")
                         cursor.execute(
-                            "SELECT Active, VirtualId FROM Virtuals WHERE Name=?", (row.virtual,))
+                            "SELECT Active, VirtualId FROM Virtuals WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", (row.virtual,))
                         virtual_active = cursor.fetchone()
 
-                        if virtual_active and virtual_active[0] == 0:
-                            values = [1, datetime.datetime.now(), PoolId, row.Virtual]
+                        if virtual_active[0] is not None and virtual_active[0] == 0:
+                            values = [1, datetime.datetime.now(), None, PoolId, row.Virtual]
                             primary_key = 'Name'  # Reemplaza 'Name' con el nombre de tu clave primaria en la tabla 'Virtuals'
-                            update_entity("Virtuals",  ['Active', 'DateModify', 'PoolId'] , values, primary_key)
+                            update_entity("Virtuals",  ['Active', 'DateModify', 'DateDisable' 'PoolId'] , values, primary_key)
  
-                        cursor.execute("SELECT Active FROM BalancerVirtual WHERE VirtualId=? AND BalancerId=?", (virtual_active[1], balancer_id[0]))
+                        cursor.execute("SELECT Active FROM BalancerVirtual WHERE virtual_id =? AND balancer_id =?", (virtual_active[1], balancer_id))
                         bv_active = cursor.fetchone()
 
                         if bv_active is not None and bv_active[0] == 0:
-                            cursor.execute("UPDATE BalancerVirtual SET Active=1 WHERE VirtualId=? AND BalancerId=?", (virtual_active[1], balancer_id[0]))
-                            virtuals_to_enable.append(virtual_id)
-                        elif not bv_active:
-                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, virtual_active[1], balancer_id[0]]
+                            cursor.execute("UPDATE BalancerVirtual SET Active=1, DateModify = ?, DateDisable = ?, WHERE virtual_id =? AND balancer_id =?", (virtual_active[1], datetime.datetime.now(), None, balancer_id))
+                        elif bv_active is None:
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, virtual_active[1], balancer_id]
                             insert_entity("BalancerVirtual", bv_columns, values)
-                            virtuals_to_enable.append(virtual_id)
+                        virtuals_to_enable.append(virtual_active[1])
+                            
                     else:                    
                         values = [True, datetime.datetime.now(), row.virtual, PoolId]
                         insert_entity("Virtuals", virtual_columns, values)
                         
                         # Obtener el ID del registro insertado
-                        cursor.execute("SELECT @@IDENTITY AS 'ID'")
-                        virtual_id = cursor.fetchone()['ID']
+                        #cursor.execute("SELECT SCOPE_IDENTITY()")
+                        cursor.execute("SELECT VirtualId FROM Virtuals WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", row.virtual)
+                        virtual_id = cursor.fetchone()[0]
                         
-                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, virtual_id[0], balancer_id[0]]
+                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, virtual_id, balancer_id]
                         insert_entity("BalancerVirtual", bv_columns, values)
                         
-                        virtuals_to_enable.append(virtual_id[0])
+                        virtuals_to_enable.append(virtual_id)
 
                         cursor.execute(
-                            "SELECT COUNT(*) FROM Rules WHERE Name=?", row.Rule)
+                            "SELECT COUNT(*) FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", row.Rule)
                         result5 = cursor.fetchone()
 
-                        if (result5 and result5[0] > 0) or row.Rule == '':
+                        if (result5[0] is not None and result5[0] > 0) and row.Rule is not None:
                             print(f"Registro duplicado para: {row.Rule}")
 
-                            cursor.execute("SELECT Active, RuleId FROM Rules WHERE Name=?",(row.Rule,))
+                            cursor.execute("SELECT Active, RuleId FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?",(row.Rule,))
                             rule_active=cursor.fetchone()
 
-                            if rule_active[0] and rule_active[0]==0:
-                                cursor.execute("UPDATE Rules SET Active=1 WHERE Name=?",(row.Rule,))
+                            if rule_active[0] is not None and rule_active[0]==0:
+                                cursor.execute("UPDATE Rules SET Active=1, DateModify =?, DateDisable=?, WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?",(datetime.datetime.now(), None, row.Rule,))
                             
-                            cursor.execute("SELECT Active FROM BalancerRule WHERE BalancerId=? AND RuleId=?",(balancer_id, rule_active[1]))
+                            cursor.execute("SELECT Active FROM BalancerRule WHERE balancer_id =? AND rule_id=?",(balancer_id, rule_active[1]))
                             br_active=cursor.fetchone()
 
-                            if br_active is not None and br_active == 0:
-                                cursor.execute("UPDATE BalancerRule SET Active=1 WHERE BalancerId=? AND RuleId=?",(balancer_id, rule_active[1]))
+                            if br_active[0] is not None and br_active[0] == 0:
+                                cursor.execute("UPDATE BalancerRule SET Active=1, DateModify =?, DateDisable =?, WHERE balancer_id =? AND rule_id=?",(datetime.datetime.now(), None, balancer_id, rule_active[1]))
                             elif not br_active:
                                 values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_active[1], balancer_id]
                                 insert_entity("BalancerRule", br_columns, values)
-                        else:
+                        elif row.Rule is not None:
                             cursor.execute(
-                                "SELECT VirtualId FROM Virtuals WHERE Name=?", row.virtual)
+                                "SELECT VirtualId FROM Virtuals WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", row.virtual)
                             virtualId = cursor.fetchone()
+
                             values = [True, datetime.datetime.now(), row.Rule, virtualId[0]]
                             insert_entity("Rules", rule_columns, values)
                             
                             # Obtener el ID del registro insertado
-                            cursor.execute("SELECT @@IDENTITY AS 'ID'")
-                            rule_id = cursor.fetchone()['ID']
+                            #cursor.execute("SELECT SCOPE_IDENTITY()")
+                            cursor.execute("SELECT RuleId FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", row.Rule)
+                            rule_id = cursor.fetchone()[0]
                             
-                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_id[0], balancer_id]
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_id, balancer_id]
                             insert_entity("BalancerRule", br_columns, values)
 
                 # Volver a habilitar los virtuales que han reaparecido
@@ -840,20 +899,20 @@ try:
                     update_status_history(virtual_id, True, "Virtual")
 
             elif (object == 'irule'):
-                data = pd.read_csv('irules.csv')
+                df_rules = pd.read_csv('irules.csv')
 
-                data = df.where(pd.notna(df), None)
+                df_rules = df_rules.where(pd.notna(df_rules), None)
 
-                df_rules = pd.DataFrame(data)
+                df_rules = pd.DataFrame(df_rules)
 
-                br_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'RuleId', 'balancer_Id']
+                br_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'rule_id', 'balancer_Id']
                 rule_columns = ['Active', 'DateInsert', 'Name', 'VirtualId']
                 bi_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'irule_id', 'balancer_id']
                 irule_columns = ['Active', 'DateInsert', 'Name', 'Redirect', 'RuleId']
                 
-                disable_relationships(cursor, df_rules, 'Rule', 'Rules', 'RuleId')
+                disable_relationships(df_rules, 'Rule', 'Rules', 'RuleId')
 
-                disable_relationships(cursor, df_rules, 'Irule', 'Irules', 'IruleId')
+                disable_relationships(df_rules, 'Irule', 'Irules', 'IruleId')
 
                 # Lista para mantener los rules que necesitan ser habilitados en BalancerRule
                 rules_to_enable = []
@@ -864,84 +923,88 @@ try:
                 cursor.execute("SELECT RuleId, Name FROM Rules")
                 existing_rules = cursor.fetchall()
 
-                for row in df.itertuples():
-                    cursor.execute(
-                        "SELECT COUNT(*) FROM Rules WHERE Name=?", row.Rule)
+                # Seleccionar la columna 'Rule' y eliminar duplicados
+                distinct_rules = df_rules['Rule'].drop_duplicates()
+
+                # Iterar sobre las filas únicas
+                for rule in distinct_rules:
+                    cursor.execute("SELECT COUNT(*) FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", (rule,))
                     result7 = cursor.fetchone()
 
-                    if (result7 and result7[0] > 0) or row.Rule == '':
-                        print(f"Registro duplicado para: {row.Rule}")
+                    if (result7[0] is not None and result7[0] > 0) and rule != '':
+                        print(f"Registro duplicado para: {rule}")
 
-                        cursor.execute("SELECT Active, RuleId FROM Rules WHERE Name=?",(row.Rule,))
-                        rule_active=cursor.fetchone()
+                        cursor.execute("SELECT Active, RuleId FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", (rule,))
+                        rule_active = cursor.fetchone()
 
-                        if rule_active[0] is not None and rule_active[0]==0:
-                            cursor.execute("UPDATE Rules SET Active=1 WHERE Name=?",(row.Rule,))
-                            
-                        cursor.execute("SELECT Active FROM BalancerRule WHERE BalancerId=? AND RuleId=?",(balancer_id[0], rule_active[1]))
-                        br_active=cursor.fetchone()
+                        if rule_active[0] is not None and rule_active[0] == 0:
+                            cursor.execute("UPDATE Rules SET Active=1, DateModify =?, DateDisable=? WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", (datetime.datetime.now(), None, rule,))
 
-                        if br_active is not None and br_active == 0:
-                            cursor.execute("UPDATE BalancerRule SET Active=1 WHERE BalancerId=? AND RuleId=?",(balancer_id[0], rule_active[1]))
-                            rules_to_enable.append(rule_active[1])
-                        elif not br_active:
-                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_active[1], balancer_id[0]]
+                        cursor.execute("SELECT Active FROM BalancerRule WHERE balancer_id=? AND rule_id=?", (balancer_id, rule_active[1]))
+                        br_active = cursor.fetchone()
+
+                        if br_active[0] is not None and br_active[0] == 0:
+                            cursor.execute("UPDATE BalancerRule SET Active=1, DateDisable=?, DateModify=? WHERE balancer_id=? AND rule_id=?",(None, datetime.datetime.now(), balancer_id, rule_active[1]))
+
+                        elif br_active is None:
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_active[1], balancer_id]
                             insert_entity("BalancerRule", br_columns, values)
 
-                            rules_to_enable.append(rule_active[1])
-                    else:
-                        values = [True, datetime.datetime.now(), row.Rule, None]
+                        rules_to_enable.append(rule_active[1])
+                    elif rule != '':
+                        values = [True, datetime.datetime.now(), rule, None]
                         insert_entity("Rules", rule_columns, values)
-                        
-                        # Obtener el ID del registro insertado
-                        cursor.execute("SELECT @@IDENTITY AS 'ID'")
-                        rule_id = cursor.fetchone()['ID']
-                            
-                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_id[0], balancer_id[0]]
-                        insert_entity("BalancerRule", rule_columns, values)
 
-                        rules_to_enable.append(rule_active[0])
+                        # Obtener el ID del registro insertado
+                        cursor.execute("SELECT RuleId FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", (rule,))
+                        rule_id = cursor.fetchone()[0]
+
+                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, rule_id, balancer_id]
+                        insert_entity("BalancerRule", br_columns, values)
+
+                        rules_to_enable.append(rule_id)
                
-                for row in df.itertuples():
+                for row in df_rules.itertuples():
                     cursor.execute(
-                        "SELECT RuleId FROM Rules WHERE Name=?", row.Rule)
+                        "SELECT RuleId FROM Rules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", row.Rule)
                     ruleId = cursor.fetchone()
 
                     cursor.execute(
-                        "SELECT COUNT(*) FROM Irules WHERE Name=? AND RuleId =?", (row.Irule, ruleId[0]))
+                        "SELECT COUNT(*) FROM Irules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =? AND RuleId =?", (row.Irule, ruleId[0]))
                     result6 = cursor.fetchone()
 
-                    if result6 and result6[0] > 0:
+                    if result6[0] is not None and result6[0] > 0:
                         print(f"Registro duplicado para: {row.Irule}")
 
-                        cursor.execute("SELECT Active, IruleId FROM Irules WHERE Name=? AND RuleId=?",(row.Irule, ruleId[0]))
+                        cursor.execute("SELECT Active, IruleId FROM Irules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =? AND RuleId=?",(row.Irule, ruleId[0]))
                         irule_active=cursor.fetchone()
 
                         if irule_active[0] is not None and irule_active[0]==0:
-                            cursor.execute("UPDATE Irules SET Active=1 WHERE Name=? AND RuleId=?",(row.Irule, ruleId[0]))
+                            cursor.execute("UPDATE Irules SET Active=1, DateDisable=?, DateModify=? WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =? AND RuleId=?",(None, datetime.datetime.now(), row.Irule, ruleId[0]))
                             
-                        cursor.execute("SELECT Active FROM BalancerIrule WHERE balancer_id=? AND irule_id=?",(balancer_id[0], irule_active[1]))
+                        cursor.execute("SELECT Active FROM BalancerIrule WHERE balancer_id=? AND irule_id=?",(balancer_id, irule_active[1]))
                         bi_active=cursor.fetchone()
 
-                        if bi_active is not None and bi_active == 0:
-                            cursor.execute("UPDATE BalancerIrule SET Active=1 WHERE balancer_id=? AND irule_id=?",(balancer_id[0], irule_active[1]))
-                            irules_to_enable.append(irule_active[1])
-                        elif not bi_active:
-                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, irule_active[1], balancer_id[0]]
+                        if bi_active[0] is not None and bi_active[0] == 0:
+                            cursor.execute("UPDATE BalancerIrule SET Active=1, DateDisable=?, DateModify=? WHERE balancer_id=? AND irule_id=?",(None, datetime.datetime.now(), balancer_id, irule_active[1]))
+                            
+                        elif bi_active is None:
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, irule_active[1], balancer_id]
                             insert_entity("BalancerIrule", bi_columns, values)
-                            irules_to_enable.append(irule_active[1])
+                        irules_to_enable.append(irule_active[1])
                     else:
                         values = [True, datetime.datetime.now(), row.Irule, row.Redireccionamiento, ruleId[0]]
                         insert_entity("Irules", irule_columns, values)
                         
                         # Obtener el ID del registro insertado
-                        cursor.execute("SELECT @@IDENTITY AS 'ID'")
-                        irule_id = cursor.fetchone()['ID']
+                        #cursor.execute("SELECT SCOPE_IDENTITY()")
+                        cursor.execute("SELECT IruleId FROM Irules WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ? AND RuleId=?", (row.Irule, ruleId[0]))
+                        irule_id = cursor.fetchone()[0]
                             
-                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, irule_id[0], balancer_id[0]]
-                        insert_entity("BalancerIrule", irule_columns, values)
+                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, irule_id, balancer_id]
+                        insert_entity("BalancerIrule", bi_columns, values)
 
-                        irules_to_enable.append(irule_id[0])
+                        irules_to_enable.append(irule_id)
 
                 # Volver a habilitar las reglas que han reaparecido
                 for rule_id in rules_to_enable:
@@ -952,11 +1015,11 @@ try:
                     update_status_history(irule_id, True, "Irule")
                     
             elif object == 'node':
-                data = pd.read_csv('nodes.csv')
+                df_nodes = pd.read_csv('nodes.csv')
 
-                data = df.where(pd.notna(df), None)
+                df_nodes = df_nodes.where(pd.notna(df_nodes), None)
 
-                df_nodes = pd.DataFrame(data)
+                df_nodes = pd.DataFrame(df_nodes)
 
                 node_columns = ['Active', 'DateInsert', 'Description', 'IP', 'Name']
                 bn_columns = ['DateInsert', 'DateModify', 'DateDisable', 'Active', 'node_id', 'balancer_id']
@@ -965,46 +1028,50 @@ try:
                 nodes_to_enable = []
 
                 # Llamada a la función para deshabilitar las relaciones de nodos
-                disable_relationships(cursor, df_nodes, 'Nodo', 'Nodes', 'NodeId')
+                disable_relationships(df_nodes, 'Nodo', 'Nodes', 'NodeId')
 
                 for row in df_nodes.itertuples():
                     cursor.execute(
-                        "SELECT COUNT(*) FROM Nodes WHERE Name=?", row.Nodo)
+                        "SELECT COUNT(*) FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?", row.Nodo)
                     result7 = cursor.fetchone()
 
-                    if result7 and result7[0] > 0:
+                    if result7[0] is not None and result7[0] > 0:
                         print(f"Registro duplicado para: {row.Nodo}")
 
-                        cursor.execute("SELECT Active, NodeId FROM Nodes WHERE Name=?",(row.Nodo,))
+                        cursor.execute("SELECT Active, NodeId FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS =?",(row.Nodo,))
                         node_active=cursor.fetchone()
 
                         if node_active[0] is not None and node_active[0]==0:
-                            values = [True, datetime.datetime.now(), row.Descripción, row.IP, row.Nodo]
-                            update_entity("Nodes", ['Active', 'DateInsert', 'Description', 'IP' ] , values, "Name")
+                            values = [True, datetime.datetime.now(), None, row.Descripción if not pd.isna(row.Descripción) else "", row.IP, row.Nodo]
+                            update_entity("Nodes", ['Active', 'DateModify', 'DateDisable', 'Description', 'IP'] , values, "Name")
                             
                         cursor.execute("SELECT Active FROM BalancerNode WHERE node_id=?",(node_active[1],))
                         bn_active=cursor.fetchone()
 
-                        if bn_active is not None and bn_active==0:
-                            cursor.execute("UPDATE BalancerNode SET Active=1 WHERE node_id=?",(node_active[1],))
-                            nodes_to_enable.append(node_active[1])
-                        elif not bn_active:
-                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, node_active[1], balancer_id[0]]
+                        if bn_active[0] is not None and bn_active[0]==0:
+                            cursor.execute("UPDATE BalancerNode SET Active=1, DateModify=?, DateDisable=? WHERE node_id=?",(datetime.datetime.now(), None, node_active[1],))
+                        elif bn_active is None:
+                            values = [datetime.datetime.now(), datetime.datetime.now(), None, True, node_active[1], balancer_id]
                             insert_entity("BalancerNode", bn_columns, values)
-                            nodes_to_enable.appen(node_active[1])
+                        nodes_to_enable.append(node_active[1])
 
                     else:
-                        values = [True, datetime.datetime.now(), row.Descripción, row.IP, row.Nodo]
+                        # Convertir valores nan a None
+                        values = [True, datetime.datetime.now(), row.Descripción if not pd.isna(row.Descripción) else "", row.IP, row.Nodo]
+                        # Llamar a insert_entity con los valores actualizados
                         insert_entity("Nodes", node_columns, values)
-                        
+
                         # Obtener el ID del registro insertado
-                        cursor.execute("SELECT @@IDENTITY AS 'ID'")
-                        node_id = cursor.fetchone()['ID']
+                        #cursor.execute("SELECT SCOPE_IDENTITY()")
+                        cursor.execute("SELECT NodeId FROM Nodes WHERE Name COLLATE SQL_Latin1_General_CP1_CS_AS = ?", row.Nodo)
+                        node_id = cursor.fetchone()[0]
 
                         # Insertar en BalancerNode
-                        values = [datetime.datetime.now(), datetime.datetime.now(), None, True, node_id, balancer_id[0]]
+                        values = [datetime.datetime.now(), datetime.datetime.now(), None, 1, node_id, balancer_id]
                         insert_entity("BalancerNode", bn_columns, values)
-                        nodes_to_enable.append(node_active[1])
+
+                        
+                        nodes_to_enable.append(node_id)
 
                  # Volver a habilitar las reglas que han reaparecido
                 
@@ -1020,8 +1087,8 @@ try:
                 print(object+('s.json deleted'))
 
         # Lista de nombres de archivos CSV a combinar
-        archivos_csv = ["nodes.csv", "pools.csv",
-                        "irules.csv", "virtuals.csv", "monitors.csv"]
+        archivos_csv = []
+        #["nodes.csv", "pools.csv", "irules.csv", "virtuals.csv", "monitors.csv"]
 
         # Crear un DataFrame para cada archivo CSV y almacenarlos en un diccionario
         dataframes = {}

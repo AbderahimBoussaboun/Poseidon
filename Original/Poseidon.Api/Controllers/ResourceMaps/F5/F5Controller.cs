@@ -15,7 +15,7 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Guid))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ProcesarArchivo([FromForm] IFormFile archivo, string balancerName)
+        public async Task<IActionResult> ProcesarArchivo([FromForm] IFormFile archivo, [FromForm] string balancerName, [FromForm] string commitMessage)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                 // Para carpeta temporal del sistema: Path.GetTempPath()
                 string tempFolderPath = ".\\Controllers\\ResourceMaps\\F5\\fileToProcess";
 
-                // Crea la carpeta si no existe
+                // Crear la carpeta si no existe
                 if (!Directory.Exists(tempFolderPath))
                 {
                     Directory.CreateDirectory(tempFolderPath);
@@ -65,13 +65,20 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
 
                 string logFilePath = ".\\log.txt";
 
-                // Llama al programa Python con el archivo
+                // Escribir balancerName y commitMessage en el archivo de registro
+                using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                {
+                    writer.WriteLine("Balancer Name: " + balancerName);
+                    writer.WriteLine("Commit Message: " + commitMessage);
+                }
+
+                // Llamar al programa Python con el archivo
                 string scriptPath = ".\\Controllers\\ResourceMaps\\F5\\script\\parserator.py";
-                string argumentos = $"\"{filePath}\" \"{balancerName}\""; // Agregar balancerName como argumento
+                string argumentos = $"\"{filePath}\" \"{balancerName}\" \"{commitMessage}\""; // Agregar balancerName y commitMessage como argumentos
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    FileName = @"C:\\Program Files\\Python312\\python.exe", //Ejecutar python
+                    FileName = @"C:\\Program Files\\Python312\\python.exe", // Ejecutar python
                     Arguments = $"-u {scriptPath} {argumentos}",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -85,7 +92,7 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                     proceso.StartInfo.RedirectStandardError = true;
                     proceso.Start();
 
-                    // Lee la salida estándar y la salida de error y escribe en el archivo de registro
+                    // Leer la salida estándar y la salida de error y escribir en el archivo de registro
                     using (StreamWriter writer = new StreamWriter(logFilePath, true))
                     {
                         writer.WriteLine(proceso.StandardOutput.ReadToEnd());
@@ -95,10 +102,10 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                     proceso.WaitForExit();
                 }
 
-                // Elimina el archivo después de procesarlo
+                // Eliminar el archivo después de procesarlo
                 System.IO.File.Delete(filePath);
 
-                // Elimina todo el contenido de la carpeta temporal
+                // Eliminar todo el contenido de la carpeta temporal
                 var directoryInfo = new DirectoryInfo(tempFolderPath);
                 foreach (var file in directoryInfo.GetFiles())
                 {
@@ -110,7 +117,7 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                     dir.Delete(true);
                 }
 
-                // Maneja cualquier resultado del programa Python si es necesario
+                // Manejar cualquier resultado del programa Python si es necesario
                 return Ok("Procesamiento exitoso");
             }
             catch (Exception ex)
@@ -127,7 +134,6 @@ namespace Poseidon.Api.Controllers.ResourceMaps.F5
                 return StatusCode(500, "Se ha producido un error. Consulte el archivo de registro para más detalles.");
             }
         }
-
         #endregion
     }
 }
